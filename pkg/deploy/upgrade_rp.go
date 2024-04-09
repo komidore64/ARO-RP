@@ -17,7 +17,7 @@ const (
 )
 
 func (d *deployer) UpgradeRP(ctx context.Context) error {
-	timeoutCtx, cancel := context.WithTimeout(ctx, time.Hour)
+	timeoutCtx, cancel := context.WithTimeout(ctx, 12*time.Hour)
 	defer cancel()
 	err := d.rpWaitForReadiness(timeoutCtx, rpVMSSPrefix+d.version)
 	if err != nil {
