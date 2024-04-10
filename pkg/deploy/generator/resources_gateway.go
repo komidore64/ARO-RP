@@ -241,7 +241,19 @@ func (g *generator) gatewayVMSS() *arm.Resource {
 		"''')\n'",
 	)
 
-	trailer := base64.StdEncoding.EncodeToString(scriptGatewayVMSS)
+	var sb strings.Builder
+
+	// VMSS extensions only support one custom script
+	// Because of this, the util-*.sh scripts are prefixed to the bootstrapping script
+	// main is called at the end of the bootstrapping script, so appending them will not work
+	sb.WriteString(string(scriptUtilCommon))
+	sb.WriteString(string(scriptUtilPackages))
+	sb.WriteString(string(scriptUtilServices))
+	sb.WriteString(string(scriptUtilSystem))
+	sb.WriteString("\n#Start of gatewayVMSS.sh\n")
+	sb.WriteString(string(scriptGatewayVMSS))
+
+	trailer := base64.StdEncoding.EncodeToString([]byte(sb.String()))
 
 	parts = append(parts, "'\n'", fmt.Sprintf("base64ToString('%s')", trailer))
 
@@ -337,6 +349,23 @@ func (g *generator) gatewayVMSS() *arm.Resource {
 									Settings:                map[string]interface{}{},
 									ProtectedSettings: map[string]interface{}{
 										"script": script,
+									},
+								},
+							},
+							{
+								// az-secmonitor package no longer needs to be manually installed
+								// References:
+								// 		https://eng.ms/docs/products/azure-linux/gettingstarted/aks/monitoring
+								//		https://msazure.visualstudio.com/ASMDocs/_wiki/wikis/ASMDocs.wiki/179541/Linux-AzSecPack-AutoConfig-Onboarding-(manual-for-C-AI)?anchor=3.1.1-using-arm-template-resource-elements
+								Name: to.StringPtr("AzureMonitorLinuxAgent"),
+								VirtualMachineScaleSetExtensionProperties: &mgmtcompute.VirtualMachineScaleSetExtensionProperties{
+									Publisher:               to.StringPtr("Microsoft.Azure.Monitor"),
+									EnableAutomaticUpgrade:  to.BoolPtr(true),
+									AutoUpgradeMinorVersion: to.BoolPtr(true),
+									TypeHandlerVersion:      to.StringPtr("1.0"),
+									Type:                    to.StringPtr("AzureMonitorLinuxAgent"),
+									Settings: map[string]interface{}{
+										"GCS_AUTO_CONFIG": true,
 									},
 								},
 							},
