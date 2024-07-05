@@ -56,10 +56,10 @@ type OpenShiftClusterProperties struct {
 	ConsoleProfile ConsoleProfile `json:"consoleProfile,omitempty"`
 
 	// The cluster service principal profile.
-	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
+	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty" mutable:"true"`
 
 	// The workload identity profile.
-	PlatformWorkloadIdentityProfile *PlatformWorkloadIdentityProfile `json:"platformWorkloadIdentityProfile,omitempty"`
+	PlatformWorkloadIdentityProfile *PlatformWorkloadIdentityProfile `json:"platformWorkloadIdentityProfile,omitempty" mutable:"true"`
 
 	// The cluster network profile.
 	NetworkProfile NetworkProfile `json:"networkProfile,omitempty"`
