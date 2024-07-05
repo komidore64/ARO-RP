@@ -38,7 +38,7 @@ type OpenShiftCluster struct {
 	Properties OpenShiftClusterProperties `json:"properties,omitempty"`
 
 	// Identity stores information about the cluster MSI(s) in a workload identity cluster.
-	Identity *Identity `json:"identity,omitempty"`
+	Identity *Identity `json:"identity,omitempty" mutable:"true"`
 }
 
 // Tags represents an OpenShift cluster's tags.
@@ -56,10 +56,10 @@ type OpenShiftClusterProperties struct {
 	ConsoleProfile ConsoleProfile `json:"consoleProfile,omitempty"`
 
 	// The cluster service principal profile.
-	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
+	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty" mutable:"true"`
 
 	// The workload identity profile.
-	PlatformWorkloadIdentityProfile *PlatformWorkloadIdentityProfile `json:"platformWorkloadIdentityProfile,omitempty"`
+	PlatformWorkloadIdentityProfile *PlatformWorkloadIdentityProfile `json:"platformWorkloadIdentityProfile,omitempty" mutable:"true"`
 
 	// The cluster network profile.
 	NetworkProfile NetworkProfile `json:"networkProfile,omitempty"`

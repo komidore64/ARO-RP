@@ -975,6 +975,64 @@ func TestOpenShiftClusterStaticValidateDelta(t *testing.T) {
 			modify: func(oc *OpenShiftCluster) { oc.Tags = Tags{"new": "value"} },
 		},
 		{
+			name: "platform workload identity profile change - temporarily allowed",
+			current: func(oc *OpenShiftCluster) {
+				oc.Properties.ServicePrincipalProfile = nil
+				oc.Identity = &Identity{
+					Type: "something",
+					UserAssignedIdentities: UserAssignedIdentities{
+						"ident1": {
+							ClientID:    "11111111-1111-1111-1111-111111111111",
+							PrincipalID: "idk",
+						},
+					},
+				}
+				oc.Properties.PlatformWorkloadIdentityProfile = &PlatformWorkloadIdentityProfile{
+					PlatformWorkloadIdentities: []PlatformWorkloadIdentity{
+						{
+							OperatorName: "test",
+							ObjectID:     "00000000-0000-0000-0000-000000000000",
+							ClientID:     "00000000-0000-0000-0000-000000000000",
+							ResourceID:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/groupname/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ident1",
+						},
+					},
+				}
+			},
+			modify: func(oc *OpenShiftCluster) {
+				oc.Identity = nil
+				oc.Properties.PlatformWorkloadIdentityProfile = nil
+				oc.Properties.ServicePrincipalProfile = &ServicePrincipalProfile{
+					ClientSecret: "clientSecret",
+					ClientID:     "11111111-1111-1111-1111-111111111111",
+				}
+			},
+		},
+		{
+			name: "service principal profile change - temporarily allowed",
+			modify: func(oc *OpenShiftCluster) {
+				oc.Properties.ServicePrincipalProfile = nil
+				oc.Identity = &Identity{
+					Type: "something",
+					UserAssignedIdentities: UserAssignedIdentities{
+						"ident1": {
+							ClientID:    "11111111-1111-1111-1111-111111111111",
+							PrincipalID: "idk",
+						},
+					},
+				}
+				oc.Properties.PlatformWorkloadIdentityProfile = &PlatformWorkloadIdentityProfile{
+					PlatformWorkloadIdentities: []PlatformWorkloadIdentity{
+						{
+							OperatorName: "test",
+							ObjectID:     "00000000-0000-0000-0000-000000000000",
+							ClientID:     "00000000-0000-0000-0000-000000000000",
+							ResourceID:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/groupname/providers/Microsoft.ManagedIdentity/userAssignedIdentities/ident1",
+						},
+					},
+				}
+			},
+		},
+		{
 			name:    "provisioningState change",
 			modify:  func(oc *OpenShiftCluster) { oc.Properties.ProvisioningState = ProvisioningStateFailed },
 			wantErr: "400: PropertyChangeNotAllowed: properties.provisioningState: Changing property 'properties.provisioningState' is not allowed.",
