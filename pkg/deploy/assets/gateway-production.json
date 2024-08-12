@@ -208,7 +208,16 @@
             },
             "properties": {
                 "upgradePolicy": {
-                    "mode": "Rolling"
+                    "mode": "Automatic",
+                    "rollingUpgradePolicy": {
+                        "maxBatchInstancePercent": 34,
+                        "maxUnhealthyInstancePercent": 34,
+                        "maxUnhealthyUpgradedInstancePercent": 34,
+                        "pauseTimeBetweenBatches": "PT10M"
+                    },
+                    "automaticOSUpgradePolicy": {
+                        "enableAutomaticOSUpgrade": true
+                    }
                 },
                 "virtualMachineProfile": {
                     "osProfile": {
@@ -228,9 +237,9 @@
                     },
                     "storageProfile": {
                         "imageReference": {
-                            "publisher": "RedHat",
-                            "offer": "RHEL",
-                            "sku": "8-LVM",
+                            "publisher": "MicrosoftCBLMariner",
+                            "offer": "cbl-mariner",
+                            "sku": "cbl-mariner-2-gen2",
                             "version": "latest"
                         },
                         "osDisk": {

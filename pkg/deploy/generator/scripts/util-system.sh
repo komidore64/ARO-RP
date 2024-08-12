@@ -1,6 +1,58 @@
 #!/bin/bash
 # This file is intended to be sourced by bootstrapping scripts for commonly used functions
 
+# get_boot_dev_uuid
+# Get the boot devices uuid
+# args:
+# 1) boot_dev_uuid - nameref, string; Empty variable for boot device uuid assignment
+# Taken and refactored from https://eng.ms/docs/products/azure-linux/features/security/fips
+get_boot_dev_uuid() {
+    local -n boot_dev_uuid="$1"
+    # Set boot_uuid variable for the boot partition if different from the root
+    boot_dev="$(df /boot/ | tail -1 | cut -d' ' -f1)"
+    root_dev="$(df / | tail -1 | cut -d' ' -f1)"
+
+    boot_dev_uuid="$root_dev"
+    if [ "$boot_dev" != "$root_dev" ]; then
+        # shellcheck disable=SC2034
+        boot_dev_uuid="boot=UUID=$(blkid "$boot_dev" -s UUID -o value)"
+    fi
+}
+
+# fips_verify
+# Verify that fips mode is enabled
+# Taken and refactored from https://eng.ms/docs/products/azure-linux/features/security/fips
+fips_verify() {
+    fips_enabled_proc="$(cat /proc/sys/crypto/fips_enabled)"
+    fips_enabled_sysctl="$(sysctl -n crypto.fips_enabled)"
+    if [ "$fips_enabled_proc" -ne 1 ] || [ "$fips_enabled_sysctl" -ne 1 ]; then
+        abort "FIPS mode is disabled"
+    fi
+
+    log "FIPS mode is enabled"
+}
+
+# fips_configure
+# Configures VM to run with fips mode enabled
+# Taken and refactored from https://eng.ms/docs/products/azure-linux/features/security/fips
+# TODO remove this once sku cbl-mariner-2-gen2-fips is supported by automatic OS updates
+# Reference: https://learn.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-automatic-upgrade#supported-os-images
+fips_configure() {
+    # shellcheck disable=SC2034
+    local boot_uuid
+    get_boot_dev_uuid boot_uuid
+
+    local grub2_env
+    if grub2_env="$(grub2-editenv - list | grep kernelopts)"; then
+        grub2-editenv - set "$grub2_env fips=1 $boot_uuid"
+    else
+        grubby --update-kernel=ALL --args="fips=1 $boot_uuid"
+    fi
+
+    # fips mode verification will fail until after the vm has been rebooted
+    # fips_verify
+}
+
 # configure_sshd
 # We need to configure PasswordAuthentication to yes in order for the VMSS Access JIT to work
 configure_sshd() {
