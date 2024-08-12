@@ -68,6 +68,7 @@ retry() {
         if [ "${attempt}" -le "$retries" ]; then
             sleep "$wait_time"
         else
+            # TODO remove packages from this error
             abort "attempt #${attempt} - Failed to update packages"
         fi
     done

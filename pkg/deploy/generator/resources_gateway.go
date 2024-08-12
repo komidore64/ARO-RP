@@ -268,8 +268,19 @@ func (g *generator) gatewayVMSS() *arm.Resource {
 			},
 			Tags: map[string]*string{},
 			VirtualMachineScaleSetProperties: &mgmtcompute.VirtualMachineScaleSetProperties{
+				// Reference: https://learn.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-automatic-upgrade#arm-templates
 				UpgradePolicy: &mgmtcompute.UpgradePolicy{
-					Mode: mgmtcompute.UpgradeModeRolling,
+					Mode: mgmtcompute.UpgradeModeAutomatic,
+					RollingUpgradePolicy: &mgmtcompute.RollingUpgradePolicy{
+						// Percentage equates to 1.02 instances out of 3
+						MaxBatchInstancePercent:             to.Int32Ptr(34),
+						MaxUnhealthyInstancePercent:         to.Int32Ptr(34),
+						MaxUnhealthyUpgradedInstancePercent: to.Int32Ptr(34),
+						PauseTimeBetweenBatches:             to.StringPtr("PT10M"),
+					},
+					AutomaticOSUpgradePolicy: &mgmtcompute.AutomaticOSUpgradePolicy{
+						EnableAutomaticOSUpgrade: to.BoolPtr(true),
+					},
 				},
 				VirtualMachineProfile: &mgmtcompute.VirtualMachineScaleSetVMProfile{
 					OsProfile: &mgmtcompute.VirtualMachineScaleSetOSProfile{
@@ -289,10 +300,13 @@ func (g *generator) gatewayVMSS() *arm.Resource {
 					},
 					StorageProfile: &mgmtcompute.VirtualMachineScaleSetStorageProfile{
 						ImageReference: &mgmtcompute.ImageReference{
-							Publisher: to.StringPtr("RedHat"),
-							Offer:     to.StringPtr("RHEL"),
-							Sku:       to.StringPtr("8-LVM"),
-							Version:   to.StringPtr("latest"),
+							Publisher: to.StringPtr("MicrosoftCBLMariner"),
+							Offer:     to.StringPtr("cbl-mariner"),
+							// cbl-mariner-2-gen2-fips is not supported by Automatic OS Updates
+							// therefore the non fips image is used, and fips is configured manually
+							// Reference: https://learn.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-automatic-upgrade
+							Sku:     to.StringPtr("cbl-mariner-2-gen2"),
+							Version: to.StringPtr("latest"),
 						},
 						OsDisk: &mgmtcompute.VirtualMachineScaleSetOSDisk{
 							CreateOption: mgmtcompute.DiskCreateOptionTypesFromImage,

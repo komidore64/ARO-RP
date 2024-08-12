@@ -41,11 +41,17 @@ main() {
         python3
         # required for podman networking
         firewalld
+        # Required to enable fips
+        grubby
+        dracut-fips
+        dracut-fips
     )
 
     dnf_install_pkgs install_pkgs \
                      retry_wait_time \
                      "$pkg_retry_count"
+    
+    fips_configure
 
     # TODO remove this once MicrosoftCBLMariner:cbl-mariner:cbl-mariner-2-gen2-fips supports automatic updates
     # Reference: https://learn.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-automatic-upgrade#supported-os-images
