@@ -653,10 +653,12 @@ configure_vmss_aro_services() {
 
     if [ "$r" == "$role_gateway" ]; then
         configure_service_aro_gateway "${images["rp"]}" "$1" "${configs["gateway_config"]}" "${configs["network"]}"
+        configure_certs_gateway
     elif [ "$r" == "$role_rp" ]; then
         configure_service_aro_rp "${images["rp"]}" "$1" "${configs["rp_config"]}" "${configs["network"]}"
         configure_service_aro_monitor "${images["rp"]}" "${configs["network"]}"
         configure_service_aro_portal "${images["rp"]}" "${configs["network"]}"
+        configure_certs_rp
     fi
 
     configure_service_fluentbit "${configs["fluentbit"]}" "${images["fluentbit"]}" "${configs["network"]}"
