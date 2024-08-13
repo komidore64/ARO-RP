@@ -2,15 +2,21 @@
 # Internal Functions and Constants
 
 # empty_str - constant; used by functions for optional nameref string arguements
+# empty_str=""
 # shellcheck disable=SC2034
 declare -r empty_str=""
 
-# role_gateway is used to determine which VMSS is being bootstrapped
+# role_gateway - constant; Is used to determine which VMSS is being bootstrapped
 # this should be referenced by scripts sourcing this file
+# role_gateway="gateway"
 declare -r role_gateway="gateway"
-# role_rp is used to determine which VMSS is being bootstrapped
+# role_rp - constant; Is used to determine which VMSS is being bootstrapped
 # this should be referenced by scripts sourcing this file
+# role_rp="rp"
 declare -r role_rp="rp"
+# role_devproxy - constant; Is used to determine which VMSS is being bootstrapped
+# role_devproxy="devproxy"
+declare -r role_devproxy="devproxy"
 
 # log is a wrapper for echo that includes the function name
 # Args
@@ -59,19 +65,17 @@ retry() {
     local -n wait_time="$2"
     local -ri retries="${3:-5}"
 
-    for attempt in {1..5}; do
+    
+    for attempt in $(seq 1 $retries); do
         log "attempt #${attempt} - ${FUNCNAME[2]}"
         # shellcheck disable=SC2068
         ${cmd_retry[@]} &
 
-        wait $! && break
-        if [ "${attempt}" -le "$retries" ]; then
-            sleep "$wait_time"
-        else
-            # TODO remove packages from this error
-            abort "attempt #${attempt} - Failed to update packages"
-        fi
+        wait -f $! && return 0
+        sleep "$wait_time"
     done
+
+    abort "${cmd_retry[*]} failed after #$retries attempts"
 }
 
 # verify_role
@@ -85,7 +89,7 @@ verify_role() {
     allowed_roles_glob="($role_rp|$role_gateway)"
     if $certs; then
         # remove trailing ")" and append additional role
-        allowed_roles_glob="${allowed_roles_glob%\)*}|devproxy)"
+        allowed_roles_glob="${allowed_roles_glob%\)*}|$role_devproxy)"
     fi
 
     if [[ "$test_role" =~ $allowed_roles_glob ]]; then

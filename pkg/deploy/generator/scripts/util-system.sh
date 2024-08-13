@@ -206,36 +206,8 @@ pull_container_images() {
     retry cmd retry_time
 }
 
-# configure_certs
-# args:
-# 1) role - string; can be "devproxy" or "rp"
-configure_certs() {
-    local -n role="$1"
+configure_certs_general() {
     log "starting"
-    log "Configuring certificates for $role"
-
-    verify_role role true
-
-    if [ "$role" == "devproxy" ]; then
-        local -r proxy_certs_basedir="/etc/proxy"
-        mkdir -p "$proxy_certs_basedir"
-        base64 -d <<<"$PROXYCERT" > "$proxy_certs_basedir/proxy.crt"
-        base64 -d <<<"$PROXYKEY" > "$proxy_certs_basedir/proxy.key"
-        base64 -d <<<"$PROXYCLIENTCERT" > "$proxy_certs_basedir/proxy-client.crt"
-        chown -R 1000:1000 /etc/proxy
-        chmod 0600 "$proxy_certs_basedir/proxy.key"
-        return 0
-    fi
-
-    if [ "$role" == "rp" ]; then
-        local -r rp_certs_basedir="/etc/aro-rp"
-        mkdir -p "$rp_certs_basedir"
-        base64 -d <<<"$ADMINAPICABUNDLE" > "$rp_certs_basedir/admin-ca-bundle.pem"
-        if [[ -n "$ARMAPICABUNDLE" ]]; then
-        base64 -d <<<"$ARMAPICABUNDLE" > "$rp_certs_basedir/arm-ca-bundle.pem"
-        fi
-        chown -R 1000:1000 "$rp_certs_basedir"
-    fi
 
     # setting MONITORING_GCS_AUTH_ID_TYPE=AuthKeyVault seems to have caused mdsd not
     # to honour SSL_CERT_FILE any more, heaven only knows why.
@@ -243,6 +215,52 @@ configure_certs() {
     mkdir -p "$ssl_certs_basedir"
     csplit -f "$ssl_certs_basedir/cert-" -b %03d.pem /etc/pki/tls/certs/ca-bundle.crt /^$/1 "{*}" 1>/dev/null
     c_rehash "$ssl_certs_basedir"
+}
+
+# configure_certs
+# args:
+# 1) role - string; can be "devproxy" or "rp"
+# certs_configure_rp
+configure_certs_rp() {
+    log "starting"
+
+    verify_role role_rp
+
+    local -r rp_certs_basedir="/etc/aro-rp"
+    mkdir -p "$rp_certs_basedir"
+    base64 -d <<<"$ADMINAPICABUNDLE" > "$rp_certs_basedir/admin-ca-bundle.pem"
+    if [[ -n "$ARMAPICABUNDLE" ]]; then
+    base64 -d <<<"$ARMAPICABUNDLE" > "$rp_certs_basedir/arm-ca-bundle.pem"
+    fi
+    chown -R 1000:1000 "$rp_certs_basedir"
+
+    configure_certs_general
+}
+
+# configure_certs_gateway
+configure_certs_gateway() {
+    log "starting"
+
+    verify_role role_gateway
+    configure_certs_general
+}
+
+configure_certs_devproxy() {
+    log "starting"
+
+    verify_role role_devproxy true
+    
+    local -r proxy_certs_basedir="/etc/proxy"
+    mkdir -p "$proxy_certs_basedir"
+    base64 -d <<<"$PROXYCERT" > "$proxy_certs_basedir/proxy.crt"
+    base64 -d <<<"$PROXYKEY" > "$proxy_certs_basedir/proxy.key"
+    base64 -d <<<"$PROXYCLIENTCERT" > "$proxy_certs_basedir/proxy-client.crt"
+    chown -R 1000:1000 /etc/proxy
+    chmod 0600 "$proxy_certs_basedir/proxy.key"
+}
+
+configure_azsecd_scan() {
+    log "starting"
 
     # we leave clientId blank as long as only 1 managed identity assigned to vmss
     # if we have more than 1, we will need to populate with clientId used for off-node scanning
@@ -265,6 +283,8 @@ configure_certs() {
 # run_azsecd_config_scan
 run_azsecd_config_scan() {
     log "starting"
+
+    configure_azsecd_scan
 
     local -ar configs=(
         "baseline"

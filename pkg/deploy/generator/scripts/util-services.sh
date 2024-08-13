@@ -654,17 +654,19 @@ configure_vmss_aro_services() {
 
     if [ "$r" == "$role_gateway" ]; then
         configure_service_aro_gateway "${images["rp"]}" "$1" "${configs["gateway_config"]}" "${configs["network"]}"
+        configure_certs_gateway
     elif [ "$r" == "$role_rp" ]; then
         configure_service_aro_rp "${images["rp"]}" "$1" "${configs["rp_config"]}" "${configs["network"]}"
         configure_service_aro_monitor "${images["rp"]}" "${configs["network"]}"
         configure_service_aro_portal "${images["rp"]}" "${configs["network"]}"
+        configure_certs_rp
     fi
 
     configure_service_fluentbit "${configs["fluentbit"]}" "${images["fluentbit"]}" "${configs["network"]}"
     configure_service_mdm "$1" "${images["mdm"]}" "${configs["network"]}"
     configure_service_mdsd "$1" "${configs["mdsd"]}"
-    configure_certs "$1"
     configure_timers_mdm_mdsd "$1"
+    run_azsecd_config_scan
 }
 
 util_common="util-common.sh"
