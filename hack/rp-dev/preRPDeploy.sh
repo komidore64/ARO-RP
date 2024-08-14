@@ -22,26 +22,28 @@ export DST_AUTH=$(echo -n '00000000-0000-0000-0000-000000000000:'$(az acr login 
 docker login -u 00000000-0000-0000-0000-000000000000 -p "$(echo $DST_AUTH | base64 -d | cut -d':' -f2)" "$DST_ACR_NAME.azurecr.io"
 echo "Success step 6a ✈️ 🏷️ - Login to ACR"
 
+make go-verify
+echo "Success step 6b - Add Vendor directory"
+
 go run -tags containers_image_openpgp,exclude_graphdriver_btrfs ./cmd/aro mirror latest
-echo "Success step 6b ✈️ 📦 - Mirror OCP images"
+echo "Success step 6c ✈️ 📦 - Mirror OCP images"
 
 source ./hack/devtools/rp-dev-helper.sh
 mdm_image_tag=$(get_digest_tag "MdmImage")
 mdsd_image_tag=$(get_digest_tag "MdsdImage")
 az acr import --name $DST_ACR_NAME.azurecr.io${mdm_image_tag} --source linuxgeneva-microsoft.azurecr.io${mdm_image_tag}
 az acr import --name $DST_ACR_NAME.azurecr.io${mdsd_image_tag} --source linuxgeneva-microsoft.azurecr.io${mdsd_image_tag}
-echo "Success step 6c ✈️ 📦 - Import MDM and MDSD to ACR" # can run only once?
+echo "Success step 6d ✈️ 📦 - Import MDM and MDSD to ACR" # can run only once?
 
 make publish-image-aro-multistage
-echo "Success step 6d ✈️ 📦 - Build, push and import to ARO image to ACR"
+echo "Success step 6e ✈️ 📦 - Build, push and import to ARO image to ACR"
 
 fluentbit_image_tag=$(get_digest_tag "FluentbitImage")
 copy_digest_tag $PULL_SECRET "arointsvc" $DST_ACR_NAME $fluentbit_image_tag
-echo "Success step 6e ✈️ 📦 - Copy Fluenbit image to ACR"
+echo "Success step 6f ✈️ 📦 - Copy Fluenbit image to ACR"
 echo "Success step 6 ✅ - Mirror repos to ACR"
 
 export PARENT_DOMAIN_NAME=osadev.cloud
-# export PARENT_DOMAIN_RESOURCEGROUP=dns
 export GLOBAL_RESOURCEGROUP=${AZURE_PREFIX}-global
 
 for DOMAIN_NAME in ${AZURE_PREFIX}-clusters.$PARENT_DOMAIN_NAME ${AZURE_PREFIX}-rp.$PARENT_DOMAIN_NAME; do
@@ -67,23 +69,23 @@ echo "Success step 7a ✅ - Update DNS Child Domains"
 az keyvault certificate import \
     --vault-name "$KEYVAULT_PREFIX-svc" \
     --name rp-mdm \
-    --file secrets/rp-metrics-int.pem >/dev/null
+    --file secrets/rp-mdm-self-signed.pem >/dev/null
 az keyvault certificate import \
     --vault-name "$KEYVAULT_PREFIX-gwy" \
     --name gwy-mdm \
-    --file secrets/rp-metrics-int.pem >/dev/null
+    --file secrets/gwy-mdm-self-signed.pem >/dev/null
 az keyvault certificate import \
     --vault-name "$KEYVAULT_PREFIX-svc" \
     --name rp-mdsd \
-    --file secrets/rp-logging-int.pem >/dev/null
+    --file secrets/rp-mdsd-self-signed.pem >/dev/null
 az keyvault certificate import \
     --vault-name "$KEYVAULT_PREFIX-gwy" \
     --name gwy-mdsd \
-    --file secrets/rp-logging-int.pem >/dev/null
+    --file secrets/gwy-mdsd-self-signed.pem >/dev/null
 az keyvault certificate import \
     --vault-name "$KEYVAULT_PREFIX-svc" \
     --name cluster-mdsd \
-    --file secrets/cluster-logging-int.pem >/dev/null
+    --file secrets/cluster-mdsd-self-signed.pem >/dev/null
 az keyvault certificate import \
     --vault-name "$KEYVAULT_PREFIX-svc" \
     --name dev-arm \
