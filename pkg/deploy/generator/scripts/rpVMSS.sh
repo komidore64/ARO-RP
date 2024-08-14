@@ -27,7 +27,6 @@ main() {
 
     # shellcheck disable=SC2034
     local -ra install_pkgs=(
-        azure-cli
         clamav
         azsec-clamav
         azure-cli
@@ -42,7 +41,6 @@ main() {
         firewalld
         # Required to enable fips
         grubby
-        dracut-fips
         dracut-fips
     )
 
@@ -197,7 +195,7 @@ OIDC_STORAGE_ACCOUNT_NAME='$OIDCSTORAGEACCOUNTNAME'
 export AZURE_CLOUD_NAME="${AZURECLOUDNAME:?"Failed to carry over variables"}"
 
 # util.sh does not exist when deployed to VMSS via VMSS extensions
-# This is because commonVMSS.sh is concatenated with this script
+# Provides shellcheck definitions
 util="util.sh"
 if [ -f "$util" ]; then
     # shellcheck source=util.sh

@@ -21,7 +21,7 @@ declare -r role_devproxy="devproxy"
 # log is a wrapper for echo that includes the function name
 # Args
 # 1) msg - string
-# 2) stack_level - int; optional, defaults to calling function
+# 2) stack_level - int; optional, defaults to the function at the bottom of the call stack
 log() {
     local -r msg="${1:-"log message is empty"}"
     local -r stack_level="${2:-1}"
@@ -127,7 +127,7 @@ get_keyvault_suffix() {
     esac
 }
 
-# reboot_vm restores all selinux file contexts, then schedules a reboot for one hour later
+# reboot_vm restores calls shutdown -r in a subshell
 # Reboots should scheduled after all VM extensions have had time to complete
 # Reference: https://learn.microsoft.com/en-us/azure/virtual-machines/extensions/custom-script-linux#tips
 reboot_vm() {
