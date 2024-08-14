@@ -669,8 +669,18 @@ configure_vmss_aro_services() {
     run_azsecd_config_scan
 }
 
+# util-common.sh does not exist when deployed to VMSS via VMSS extensions
+# Provides shellcheck definitions
 util_common="util-common.sh"
 if [ -f "$util_common" ]; then
     # shellcheck source=util-common.sh
     source "$util_common"
+fi
+
+# util-system.sh does not exist when deployed to VMSS via VMSS extensions
+# Provides shellcheck definitions
+util_system="util-system.sh"
+if [ -f "$util_system" ]; then
+    # shellcheck source=util-system.sh
+    source "$util_system"
 fi

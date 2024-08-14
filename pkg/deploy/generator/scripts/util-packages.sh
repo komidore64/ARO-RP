@@ -122,3 +122,11 @@ rpm_import_keys() {
             retry cmd "$2" "${3:-}" && unset key
     done
 }
+
+# util-common.sh does not exist when deployed to VMSS via VMSS extensions
+# Provides shellcheck definitions
+util_common="util-common.sh"
+if [ -f "$util_common" ]; then
+    # shellcheck source=util-common.sh
+    source "$util_common"
+fi
