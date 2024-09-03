@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"sort"
 
 	hivev1 "github.com/openshift/hive/apis/hive/v1"
@@ -24,6 +25,7 @@ import (
 	"github.com/Azure/ARO-RP/pkg/hive/failure"
 	"github.com/Azure/ARO-RP/pkg/util/dynamichelper"
 	utillog "github.com/Azure/ARO-RP/pkg/util/log"
+	hivev1alpha1 "github.com/openshift/hive/apis/hiveinternal/v1alpha1"
 )
 
 type ClusterManager interface {
@@ -42,6 +44,7 @@ type ClusterManager interface {
 	IsClusterInstallationComplete(ctx context.Context, doc *api.OpenShiftClusterDocument) (bool, error)
 	GetClusterDeployment(ctx context.Context, doc *api.OpenShiftClusterDocument) (*hivev1.ClusterDeployment, error)
 	ResetCorrelationData(ctx context.Context, doc *api.OpenShiftClusterDocument) error
+	GetSyncSetResources(ctx context.Context, doc *api.OpenShiftClusterDocument) (*hivev1alpha1.ClusterSync, error)
 }
 
 type clusterManager struct {
@@ -262,4 +265,20 @@ func (hr *clusterManager) installLogsForLatestDeployment(ctx context.Context, cd
 	latestProvision := provisions[0]
 
 	return latestProvision.Spec.InstallLog, nil
+}
+
+func (hr *clusterManager) GetSyncSetResources(ctx context.Context, doc *api.OpenShiftClusterDocument) (*hivev1alpha1.ClusterSync, error) {
+	clusterSync := &hivev1alpha1.ClusterSync{}
+
+	key := client.ObjectKey{
+		Name:      ClusterDeploymentName, // "cluster",
+		Namespace: doc.OpenShiftCluster.Properties.HiveProfile.Namespace,
+	}
+
+	err := hr.hiveClientset.Get(ctx, key, clusterSync)
+	if err != nil {
+		log.Fatalf("Error getting ClusterSync resources: %s", err.Error())
+	}
+
+	return clusterSync, nil
 }

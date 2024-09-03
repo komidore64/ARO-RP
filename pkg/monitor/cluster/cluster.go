@@ -22,6 +22,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 
 	"github.com/Azure/ARO-RP/pkg/api"
+	"github.com/Azure/ARO-RP/pkg/hive"
 	"github.com/Azure/ARO-RP/pkg/metrics"
 	"github.com/Azure/ARO-RP/pkg/monitor/dimension"
 	"github.com/Azure/ARO-RP/pkg/monitor/emitter"
@@ -60,10 +61,12 @@ type Monitor struct {
 		arodl *appsv1.DeploymentList
 	}
 
-	wg *sync.WaitGroup
+	wg                 *sync.WaitGroup
+	hiveClusterManager hive.ClusterManager
+	doc                *api.OpenShiftClusterDocument
 }
 
-func NewMonitor(log *logrus.Entry, restConfig *rest.Config, oc *api.OpenShiftCluster, m metrics.Emitter, hiveRestConfig *rest.Config, hourlyRun bool, wg *sync.WaitGroup) (*Monitor, error) {
+func NewMonitor(log *logrus.Entry, restConfig *rest.Config, oc *api.OpenShiftCluster, doc *api.OpenShiftClusterDocument, m metrics.Emitter, hiveRestConfig *rest.Config, hourlyRun bool, wg *sync.WaitGroup, hiveClusterManager hive.ClusterManager) (*Monitor, error) {
 	r, err := azure.ParseResourceID(oc.ID)
 	if err != nil {
 		return nil, err
@@ -188,6 +191,7 @@ func (mon *Monitor) Monitor(ctx context.Context) (errs []error) {
 		return
 	}
 	for _, f := range []func(context.Context) error{
+		mon.emitSyncSetStatus,
 		mon.emitAroOperatorHeartbeat,
 		mon.emitAroOperatorConditions,
 		mon.emitNSGReconciliation,
