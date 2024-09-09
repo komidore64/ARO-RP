@@ -25,7 +25,7 @@ var (
 	pkgpath           = filepath.Dir(thisfile)
 	repopath          = strings.Replace(thisfile, "pkg/util/log/log.go", "", -1)
 
-	loglevel = flag.String("loglevel", "info", "{panic,fatal,error,warning,info,debug,trace}")
+	loglevel = flag.String("loglevel", "debug", "{panic,fatal,error,warning,info,debug,trace}")
 
 	// matches URLs that look like /subscriptions/%s/providers/%s/%s
 	RXProviderResourceKind = regexp.MustCompile(`^/subscriptions/([^/]+)/providers/([^/]+)/([^/]+)$`)
