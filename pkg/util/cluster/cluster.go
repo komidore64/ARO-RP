@@ -460,38 +460,38 @@ func (c *Cluster) generateSubnets() (vnetPrefix string, masterSubnet string, wor
 }
 
 func (c *Cluster) Delete(ctx context.Context, vnetResourceGroup, clusterName string) error {
-	c.log.Infof("Deleting cluster %s in resource group %s", clusterName, vnetResourceGroup)
+	c.log.Infof("(not) Deleting cluster %s in resource group %s", clusterName, vnetResourceGroup)
 	var errs []error
 
-	if c.ci {
-		oc, err := c.openshiftclusters.Get(ctx, vnetResourceGroup, clusterName)
-		clusterResourceGroup := fmt.Sprintf("aro-%s", clusterName)
-		if err != nil {
-			c.log.Errorf("CI E2E cluster %s not found in resource group %s", clusterName, vnetResourceGroup)
-			errs = append(errs, err)
-		}
-		errs = append(errs,
-			c.deleteApplication(ctx, oc.Properties.ServicePrincipalProfile.ClientID),
-			c.deleteCluster(ctx, vnetResourceGroup, clusterName),
-			c.ensureResourceGroupDeleted(ctx, clusterResourceGroup),
-			c.deleteResourceGroup(ctx, vnetResourceGroup),
-		)
+	// if c.ci {
+	// 	oc, err := c.openshiftclusters.Get(ctx, vnetResourceGroup, clusterName)
+	// 	clusterResourceGroup := fmt.Sprintf("aro-%s", clusterName)
+	// 	if err != nil {
+	// 		c.log.Errorf("CI E2E cluster %s not found in resource group %s", clusterName, vnetResourceGroup)
+	// 		errs = append(errs, err)
+	// 	}
+	// 	errs = append(errs,
+	// 		c.deleteApplication(ctx, oc.Properties.ServicePrincipalProfile.ClientID),
+	// 		c.deleteCluster(ctx, vnetResourceGroup, clusterName),
+	// 		c.ensureResourceGroupDeleted(ctx, clusterResourceGroup),
+	// 		c.deleteResourceGroup(ctx, vnetResourceGroup),
+	// 	)
 
-		if env.IsLocalDevelopmentMode() { //PR E2E
-			errs = append(errs,
-				c.deleteVnetPeerings(ctx, vnetResourceGroup),
-			)
-		}
-	} else {
-		errs = append(errs,
-			c.deleteRoleAssignments(ctx, vnetResourceGroup, clusterName),
-			c.deleteCluster(ctx, vnetResourceGroup, clusterName),
-			c.deleteDeployment(ctx, vnetResourceGroup, clusterName), // Deleting the deployment does not clean up the associated resources
-			c.deleteVnetResources(ctx, vnetResourceGroup, "dev-vnet", clusterName),
-		)
-	}
+	// 	if env.IsLocalDevelopmentMode() { //PR E2E
+	// 		errs = append(errs,
+	// 			c.deleteVnetPeerings(ctx, vnetResourceGroup),
+	// 		)
+	// 	}
+	// } else {
+	// 	errs = append(errs,
+	// 		c.deleteRoleAssignments(ctx, vnetResourceGroup, clusterName),
+	// 		c.deleteCluster(ctx, vnetResourceGroup, clusterName),
+	// 		c.deleteDeployment(ctx, vnetResourceGroup, clusterName), // Deleting the deployment does not clean up the associated resources
+	// 		c.deleteVnetResources(ctx, vnetResourceGroup, "dev-vnet", clusterName),
+	// 	)
+	// }
 
-	c.log.Info("done")
+	// c.log.Info("done")
 	return errors.Join(errs...)
 }
 

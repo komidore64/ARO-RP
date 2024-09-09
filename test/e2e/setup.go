@@ -461,7 +461,7 @@ func setup(ctx context.Context) error {
 	return nil
 }
 
-func done(ctx context.Context) error {
+func done(_ context.Context) error {
 	// terminate early if delete flag is set to false
 	if os.Getenv("CI") != "" && os.Getenv("E2E_DELETE_CLUSTER") != "false" {
 		_, err := cluster.New(log, _env, os.Getenv("CI") != "")
