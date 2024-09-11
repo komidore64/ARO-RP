@@ -54,7 +54,7 @@ func (m *miseAdapter) IsAuthorized(ctx context.Context, r *http.Request) (bool, 
 }
 
 func (m *miseAdapter) IsReady() bool {
-	req, err := http.NewRequest(http.MethodGet, m.client.miseAddress+"/Readyz", nil)
+	req, err := http.NewRequest(http.MethodGet, m.client.miseAddress+"/readyz", nil)
 	if err != nil {
 		m.log.Errorf("mise request create failed, %s", err)
 		return false

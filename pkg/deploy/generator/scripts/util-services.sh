@@ -482,7 +482,7 @@ service:
       processors: [batch]
       exporters: [otlp]'
 
-    write_file aro_otel_collector_appconfig_filename aro_otel_collector_service_conf_file true
+    write_file aro_otel_collector_appconfig_filename aro_otel_collector_appconfig_file true
 
     # shellcheck disable=SC2034
     local -r aro_otel_collector_service_filename='/etc/systemd/system/aro-otel-collector.service'

@@ -24,16 +24,15 @@ func (f *frontend) checkReady() bool {
 	_, okOcpVersions := f.lastOcpVersionsChangefeed.Load().(time.Time)
 	_, okPlatformWorkloadIdentityRoleSets := f.lastPlatformWorkloadIdentityRoleSetsChangefeed.Load().(time.Time)
 
-	authReady := true
+	var miseAuthReady, armAuthReady, authReady bool
 	if f.authMiddleware.EnableMISE {
-		miseAuthReady := f.env.MISEAuthorizer().IsReady()
-		authReady = authReady && miseAuthReady
+		miseAuthReady = f.env.MISEAuthorizer().IsReady()
 	}
 	// skip ARM Authorizer is MISE is Enforcing
 	if !f.authMiddleware.EnforceMISE {
-		armAuthReady := f.env.ArmClientAuthorizer().IsReady()
-		authReady = authReady && armAuthReady
+		armAuthReady = f.env.ArmClientAuthorizer().IsReady()
 	}
+	authReady = miseAuthReady || armAuthReady
 	return okOcpVersions && okPlatformWorkloadIdentityRoleSets &&
 		f.ready.Load().(bool) &&
 		authReady &&
