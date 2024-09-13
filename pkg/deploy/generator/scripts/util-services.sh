@@ -26,16 +26,19 @@ enable_services() {
 # 2) role - nameref, string; VMSS role
 # 3) conf_file - nameref, string; aro gateway environment file
 # 4) network - nameref, string; podman network name to be attached
+# 5) ipaddress - nameref, string; static ip of podman network to be attached
 configure_service_aro_gateway() {
     local -n image="$1"
     local -n role="$2"
     local -n conf_file="$3"
     local -n network="$4"
+    local -n ipaddress="$5"
     log "starting"
     log "Configuring aro-gateway service"
 
     local -r aro_gateway_conf_filename='/etc/sysconfig/aro-gateway'
     local -r add_conf_file="PODMAN_NETWORK='$network'
+IPADDRESS='${ipaddress}'
 ROLE='${role,,}'"
 
     write_file aro_gateway_conf_filename conf_file true
@@ -65,7 +68,7 @@ ExecStart=/usr/bin/podman run \
   -e MDM_NAMESPACE \
   -m 2g \
   --network=${PODMAN_NETWORK} \
-  --ip 192.168.254.2 \
+  --ip ${IPADDRESS} \
   -p 80:8080 \
   -p 8081:8081 \
   -p 443:8443 \
@@ -92,16 +95,19 @@ WantedBy=multi-user.target
 # 2) role - nameref, string; VMSS role
 # 3) conf_file - nameref, string; aro rp environment file
 # 4) network - nameref, string; podman network name to be attached
+# 5) ipaddress - nameref, string; static ip of podman network to be attached
 configure_service_aro_rp() {
     local -n image="$1"
     local -n role="$2"
     local -n conf_file="$3"
     local -n network="$4"
+    local -n ipaddress="$5"
     log "starting"
     log "Configuring aro-rp service"
 
     local -r aro_rp_conf_filename='/etc/sysconfig/aro-rp'
     local -r add_conf_file="PODMAN_NETWORK='$network'
+IPADDRESS='${ipaddress}'
 ROLE='${role,,}'"
 
     write_file aro_rp_conf_filename conf_file true
@@ -149,7 +155,7 @@ ExecStart=/usr/bin/podman run \
   -e MISE_ADDRESS \
   -m 2g \
   --network=${PODMAN_NETWORK} \
-  --ip 192.168.254.2 \
+  --ip ${IPADDRESS} \
   -p 443:8443 \
   -v /etc/aro-rp:/etc/aro-rp \
   -v /run/systemd/journal:/run/systemd/journal \
@@ -172,9 +178,11 @@ WantedBy=multi-user.target'
 # args:
 # 1) image - nameref, string; RP container image
 # 2) network - nameref, string; podman network name to be attached
+# 3) ipaddress - nameref, string; static ip of podman network to be attached
 configure_service_aro_monitor() {
     local -n image="$1"
     local -n network="$2"
+    local -n ipaddress="$3"
     log "starting"
     log "Configuring aro-monitor service"
 
@@ -198,7 +206,8 @@ KEYVAULT_PREFIX='$KEYVAULTPREFIX'
 MDM_ACCOUNT='$RPMDMACCOUNT'
 MDM_NAMESPACE=BBM
 RPIMAGE='$image'
-PODMAN_NETWORK='$network'"
+PODMAN_NETWORK='$network'
+IPADDRESS='$ipaddress'"
 
     write_file aro_monitor_service_conf_filename aro_monitor_service_conf_file true
 
@@ -218,7 +227,7 @@ ExecStart=/usr/bin/podman run \
   --rm \
   --cap-drop net_raw \
   --network=${PODMAN_NETWORK} \
-  --ip 192.168.254.3 \
+  --ip ${IPADDRESS} \
   -e AZURE_FP_CLIENT_ID \
   -e DOMAIN_NAME \
   -e CLUSTER_MDSD_ACCOUNT \
@@ -252,9 +261,11 @@ WantedBy=multi-user.target'
 # args:
 # 1) image - nameref, string; RP container image
 # 2) network - nameref, string; podman network name to be attached
+# 3) ipaddress - nameref, string; static ip of podman network to be attached
 configure_service_aro_portal() {
     local -n image="$1"
     local -n network="$2"
+    local -n ipaddress="$3"
     log "starting"
     log "Configuring aro portal service"
 
@@ -270,7 +281,8 @@ MDM_ACCOUNT='$RPMDMACCOUNT'
 MDM_NAMESPACE=Portal
 PORTAL_HOSTNAME='$LOCATION.admin.$RPPARENTDOMAINNAME'
 RPIMAGE='$image'
-PODMAN_NETWORK='$network'"
+PODMAN_NETWORK='$network'
+IPADDRESS='$ipaddress'"
 
     write_file aro_portal_service_conf_filename aro_portal_service_conf_file true
 
@@ -291,7 +303,7 @@ ExecStart=/usr/bin/podman run \
   --rm \
   --cap-drop net_raw \
   --network=${PODMAN_NETWORK} \
-  --ip 192.168.254.4 \
+  --ip ${IPADDRESS} \
   -e AZURE_PORTAL_ACCESS_GROUP_IDS \
   -e AZURE_PORTAL_CLIENT_ID \
   -e AZURE_PORTAL_ELEVATED_GROUP_IDS \
@@ -320,9 +332,11 @@ WantedBy=multi-user.target'
 # args:
 # 1) image - nameref, string; MISE container image
 # 2) network - nameref, string; podman network name to be attached
+# 3) ipaddress - nameref, string; static ip of podman network to be attached
 configure_service_aro_mise() {
     local -n image="$1"
     local -n network="$2"
+    local -n ipaddress="$3"
     log "starting"
     log "Configuring aro-mise service"
 
@@ -339,7 +353,8 @@ MISEIMAGE='$image'
 MISEVALIDAUDIENCES='$MISEVALIDAUDIENCES'
 MISEVALIDAPPIDS='$MISEVALIDAPPIDS'
 LOGININSTANCE='$LOGININSTANCE'
-PODMAN_NETWORK='$network'"
+PODMAN_NETWORK='$network'
+IPADDRESS='$ipaddress'"
 
     write_file aro_mise_service_conf_filename aro_mise_service_conf_file true
 
@@ -388,7 +403,7 @@ PODMAN_NETWORK='$network'"
     \"Kestrel\": {
         \"Endpoints\": {
             \"Http\": {
-                \"Url\": \"http://192.168.254.5:5000\"
+                \"Url\": \"http://$ipaddress:5000\"
             }
         }
     },
@@ -420,7 +435,7 @@ ExecStart=/usr/bin/podman run \
   --hostname %H \
   --name %N \
   --network=${PODMAN_NETWORK} \
-  --ip 192.168.254.5 \
+  --ip ${IPADDRESS} \
   --rm \
   $MISEIMAGE
 ExecStop=/usr/bin/podman stop %N
@@ -436,9 +451,13 @@ WantedBy=multi-user.target'
 # args:
 # 1) image - nameref, string; OTEL container image
 # 2) network - nameref, string; podman network name to be attached
+# 3) static_ip_address - nameref, array; static ips of all services
+# 4) ipaddress - nameref, string; static ip of podman network to be attached
 configure_service_aro_otel_collector() {
     local -n image="$1"
     local -n network="$2"
+    local -nA static_ip_address="$3"
+    local -n ipaddress="$4"
     log "starting"
     log "Configuring aro-otel-collector service"
 
@@ -447,7 +466,8 @@ configure_service_aro_otel_collector() {
     # shellcheck disable=SC2034
     local -r aro_otel_collector_service_conf_file="GOMEMLIMIT=1000MiB
 OTELIMAGE='$image'
-PODMAN_NETWORK='$network'"
+PODMAN_NETWORK='$network'
+IPADDRESS='$ipaddress'"
 
     write_file aro_otel_collector_service_conf_filename aro_otel_collector_service_conf_file true
 
@@ -455,28 +475,28 @@ PODMAN_NETWORK='$network'"
     # shellcheck disable=SC2034
     local -r aro_otel_collector_appconfig_filename='/app/otel/config.yaml'
     # shellcheck disable=SC2034
-    local -r aro_otel_collector_appconfig_file='receivers:
+    local -r aro_otel_collector_appconfig_file="receivers:
   httpcheck:
     targets:
     # MISE Endpoints
-      - endpoint: http://192.168.254.5:5000/healthz
+      - endpoint: http://${static_ip_address["mise"]}:5000/healthz
         method: GET
-      - endpoint: http://192.168.254.5:5000/readyz
+      - endpoint: http://${static_ip_address["mise"]}:5000/readyz
         method: GET
     # OTELs own Endpoints
-      - endpoint: http://192.168.254.6:13133/healthz
+      - endpoint: http://$ipaddress:13133/healthz
         method: GET
-      - endpoint: http://192.168.254.6:13133/readyz
+      - endpoint: http://$ipaddress:13133/readyz
         method: GET
     collection_interval: 20s
 processors:
   batch:
 extensions:
   health_check:
-    endpoint: "192.168.254.6:13133"
+    endpoint: $ipaddress:13133
 exporters:
   otlp:
-    endpoint: 192.168.254.8:4317
+    endpoint: ${static_ip_address["mdm"]}:4317
     tls:
       insecure: true
 service:
@@ -485,7 +505,7 @@ service:
     metrics:
       receivers: [httpcheck]
       processors: [batch]
-      exporters: [otlp]'
+      exporters: [otlp]"
 
     write_file aro_otel_collector_appconfig_filename aro_otel_collector_appconfig_file true
 
@@ -505,7 +525,7 @@ ExecStart=/usr/bin/podman run \
   --name %N \
   --rm \
   --network=${PODMAN_NETWORK} \
-  --ip 192.168.254.6 \
+  --ip $IPADDRESS \
   -m 2g \
   -v /app/otel/config.yaml:/etc/otelcol-contrib/config.yaml:z \
   $OTELIMAGE
@@ -572,11 +592,13 @@ export MDSD_MSGPACK_SORT_COLUMNS=\"1\""
 # 1) conf_file - string; fluenbit configuration file
 # 2) image - string; fluentbit container image to run
 # 3) network - nameref, string; podman network name to be attached
+# 4) ipaddress - nameref, string; static ip of podman network to be attached
 configure_service_fluentbit() {
     # shellcheck disable=SC2034
     local -n conf_file="$1"
     local -n image="$2"
     local -n network="$3"
+    local -n ipaddress="$4"
     log "starting"
     log "Configuring fluentbit service"
 
@@ -591,7 +613,8 @@ configure_service_fluentbit() {
     local -r sysconfig_filename='/etc/sysconfig/fluentbit'
     # shellcheck disable=SC2034
     local -r sysconfig_file="FLUENTBITIMAGE=$image
-PODMAN_NETWORK='$network'"
+PODMAN_NETWORK='$network'
+IPADDRESS='$ipaddress'"
 
     write_file sysconfig_filename sysconfig_file true
 
@@ -611,7 +634,7 @@ ExecStart=/usr/bin/podman run \
   --security-opt label=disable \
   --entrypoint /opt/td-agent-bit/bin/td-agent-bit \
   --network=${PODMAN_NETWORK} \
-  --ip 192.168.254.7 \
+  --ip ${IPADDRESS} \
   --hostname %H \
   --name %N \
   --rm \
@@ -795,10 +818,12 @@ WantedBy=multi-user.target'
 # 1) role - nameref, string; can be "gateway" or "rp"
 # 2) image - nameref, string; mdm container image to run
 # 3) network - nameref, string; podman network name to be attached
+# 4) ipaddress - nameref, string; static ip of podman network to be attached
 configure_service_mdm() {
     local -n role="$1"
     local -n image="$2"
     local -n network="$3"
+    local -n ipaddress="$4"
     log "starting"
     log "Configuring mdm service"
 
@@ -815,7 +840,8 @@ MDMSOURCEROLEINSTANCE=\"$(hostname)\"
 MDM_INPUT=statsd_local,otlp_grpc
 MDM_NAMESPACE='OTEL'
 MDM_ACCOUNT='AzureRedHatOpenShiftRP'
-PODMAN_NETWORK='$network'"
+PODMAN_NETWORK='$network'
+IPADDRESS='$ipaddress'"
 
     write_file sysconfig_mdm_filename sysconfig_mdm_file true
 
@@ -837,7 +863,7 @@ ExecStart=/usr/bin/podman run \
   --rm \
   --cap-drop net_raw \
   --network=${PODMAN_NETWORK} \
-  --ip 192.168.254.8 \
+  --ip ${IPADDRESS} \
   -m 2g \
   -v /etc/mdm.pem:/etc/mdm.pem \
   -v /var/etw:/var/etw:z \
@@ -878,20 +904,20 @@ configure_vmss_aro_services() {
     verify_role "$1"
 
     if [ "$r" == "$role_gateway" ]; then
-        configure_service_aro_gateway "${images["rp"]}" "$1" "${configs["gateway_config"]}" "${configs["network"]}"
+        configure_service_aro_gateway "${images["rp"]}" "$1" "${configs["gateway_config"]}" "${configs["network"]}" "${!configs["static_ip_address"]}[gateway]"
         configure_certs_gateway
     elif [ "$r" == "$role_rp" ]; then
-        configure_service_aro_rp "${images["rp"]}" "$1" "${configs["rp_config"]}" "${configs["network"]}"
-        configure_service_aro_monitor "${images["rp"]}" "${configs["network"]}"
-        configure_service_aro_portal "${images["rp"]}" "${configs["network"]}"
-        configure_service_aro_mise "${images["mise"]}" "${configs["network"]}"
-        configure_service_aro_otel_collector "${images["otel"]}" "${configs["network"]}"
+        configure_service_aro_rp "${images["rp"]}" "$1" "${configs["rp_config"]}" "${configs["network"]}" "${!configs["static_ip_address"]}[rp]"
+        configure_service_aro_monitor "${images["rp"]}" "${configs["network"]}" "${!configs["static_ip_address"]}[monitor]"
+        configure_service_aro_portal "${images["rp"]}" "${configs["network"]}" "${!configs["static_ip_address"]}[portal]"
+        configure_service_aro_mise "${images["mise"]}" "${configs["network"]}" "${!configs["static_ip_address"]}[mise]"
+        configure_service_aro_otel_collector "${images["otel"]}" "${configs["network"]}" "${configs["static_ip_address"]} "${!configs["static_ip_address"]}[otel_collector]"
         configure_certs_rp
     fi
 
-    configure_service_fluentbit "${configs["fluentbit"]}" "${images["fluentbit"]}" "${configs["network"]}"
+    configure_service_fluentbit "${configs["fluentbit"]}" "${images["fluentbit"]}" "${configs["network"]}" "${!configs["static_ip_address"]}[fluentbit]"
     configure_timers_mdm_mdsd "$1"
-    configure_service_mdm "$1" "${images["mdm"]}" "${configs["network"]}"
+    configure_service_mdm "$1" "${images["mdm"]}" "${configs["network"]}" "${!configs["static_ip_address"]}[mdm]"
     configure_service_mdsd "$1" "${configs["mdsd"]}"
     run_azsecd_config_scan
 }

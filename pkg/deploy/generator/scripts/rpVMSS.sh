@@ -131,6 +131,27 @@ main() {
 	Match *
 	Port 29230"
 
+    # values are references to variables, they should not be dereferenced here
+    # shellcheck disable=SC2034
+    local -rA aro_configs=(
+        ["rp_config"]="aro_rp_conf_file"
+        ["fluentbit"]="fluentbit_conf_file"
+        ["mdsd"]="mdsd_config_version"
+        ["network"]="aro_network"
+        ["static_ip_address"]="static_ip_addresses"
+    )
+
+    # shellcheck disable=SC2034
+    local -rA static_ip_addresses=(
+        ["rp"]="192.168.254.2"
+        ["gateway"]="192.168.254.2"
+        ["monitor"]="192.168.254.3"
+        ["portal"]="192.168.254.4"
+        ["mise"]="192.168.254.5"
+        ["otel_collector"]="192.168.254.6"
+        ["fluentbit"]="192.168.254.7"
+        ["mdm"]="192.168.254.8"
+    )
 
     # shellcheck disable=SC2034
     local -r mdsd_config_version="$RPMDSDCONFIGVERSION"
@@ -154,7 +175,7 @@ KEYVAULT_PREFIX='$KEYVAULTPREFIX'
 MDM_ACCOUNT='$RPMDMACCOUNT'
 MDM_NAMESPACE='${role_rp^^}'
 MDSD_ENVIRONMENT='$MDSDENVIRONMENT'
-MISE_ADDRESS='http://192.168.254.5:5000'
+MISE_ADDRESS='http://${static_ip_addresses["mise"]}:5000'
 RP_FEATURES='$RPFEATURES'
 RPIMAGE='$rpimage'
 ARO_INSTALL_VIA_HIVE='$CLUSTERSINSTALLVIAHIVE'
@@ -163,15 +184,6 @@ ARO_ADOPT_BY_HIVE='$CLUSTERSADOPTBYHIVE'
 OIDC_AFD_ENDPOINT='$LOCATION.oic.$RPPARENTDOMAINNAME'
 OIDC_STORAGE_ACCOUNT_NAME='$OIDCSTORAGEACCOUNTNAME'
 "
-
-    # values are references to variables, they should not be dereferenced here
-    # shellcheck disable=SC2034
-    local -rA aro_configs=(
-        ["rp_config"]="aro_rp_conf_file"
-        ["fluentbit"]="fluentbit_conf_file"
-        ["mdsd"]="mdsd_config_version"
-        ["network"]="aro_network"
-    )
 
     configure_vmss_aro_services role_rp \
                                 aro_images \
