@@ -65,6 +65,7 @@ ExecStart=/usr/bin/podman run \
   -e MDM_NAMESPACE \
   -m 2g \
   --network=${PODMAN_NETWORK} \
+  --ip 192.168.254.2 \
   -p 80:8080 \
   -p 8081:8081 \
   -p 443:8443 \
@@ -148,6 +149,7 @@ ExecStart=/usr/bin/podman run \
   -e MISE_ADDRESS \
   -m 2g \
   --network=${PODMAN_NETWORK} \
+  --ip 192.168.254.2 \
   -p 443:8443 \
   -v /etc/aro-rp:/etc/aro-rp \
   -v /run/systemd/journal:/run/systemd/journal \
@@ -216,6 +218,7 @@ ExecStart=/usr/bin/podman run \
   --rm \
   --cap-drop net_raw \
   --network=${PODMAN_NETWORK} \
+  --ip 192.168.254.3 \
   -e AZURE_FP_CLIENT_ID \
   -e DOMAIN_NAME \
   -e CLUSTER_MDSD_ACCOUNT \
@@ -288,6 +291,7 @@ ExecStart=/usr/bin/podman run \
   --rm \
   --cap-drop net_raw \
   --network=${PODMAN_NETWORK} \
+  --ip 192.168.254.4 \
   -e AZURE_PORTAL_ACCESS_GROUP_IDS \
   -e AZURE_PORTAL_CLIENT_ID \
   -e AZURE_PORTAL_ELEVATED_GROUP_IDS \
@@ -384,7 +388,7 @@ PODMAN_NETWORK='$network'"
     \"Kestrel\": {
         \"Endpoints\": {
             \"Http\": {
-                \"Url\": \"http://aro-mise:5000\"
+                \"Url\": \"http://192.168.254.5:5000\"
             }
         }
     },
@@ -409,16 +413,17 @@ StartLimitIntervalSec=0
 [Service]
 RestartSec=1s
 EnvironmentFile=/etc/sysconfig/aro-mise
-ExecStartPre=-/usr/bin/docker rm -f %N
-ExecStart=/usr/bin/docker run \
+ExecStartPre=-/usr/bin/podman rm -f %N
+ExecStart=/usr/bin/podman run \
   -p 5000:5000 \
   -v /app/mise/appsettings.json:/app/appsettings.json:z \
   --hostname %H \
   --name %N \
   --network=${PODMAN_NETWORK} \
+  --ip 192.168.254.5 \
   --rm \
   $MISEIMAGE
-ExecStop=/usr/bin/docker stop %N
+ExecStop=/usr/bin/podman stop %N
 Restart=always
 RestartSec=3
 StartLimitInterval=0
@@ -454,24 +459,24 @@ PODMAN_NETWORK='$network'"
   httpcheck:
     targets:
     # MISE Endpoints
-      - endpoint: http://aro-mise:5000/healthz
+      - endpoint: http://192.168.254.5:5000/healthz
         method: GET
-      - endpoint: http://aro-mise:5000/readyz
+      - endpoint: http://192.168.254.5:5000/readyz
         method: GET
     # OTELs own Endpoints
-      - endpoint: http://aro-otel-collector:13133/healthz
+      - endpoint: http://192.168.254.6:13133/healthz
         method: GET
-      - endpoint: http://aro-otel-collector:13133/readyz
+      - endpoint: http://192.168.254.6:13133/readyz
         method: GET
     collection_interval: 20s
 processors:
   batch:
 extensions:
   health_check:
-    endpoint: "aro-otel-collector:13133"
+    endpoint: "192.168.254.6:13133"
 exporters:
   otlp:
-    endpoint: mdm:4317
+    endpoint: 192.168.254.8:4317
     tls:
       insecure: true
 service:
@@ -494,16 +499,17 @@ StartLimitIntervalSec=0
 [Service]
 RestartSec=1s
 EnvironmentFile=/etc/sysconfig/aro-otel-collector
-ExecStartPre=-/usr/bin/docker rm -f %N
-ExecStart=/usr/bin/docker run \
+ExecStartPre=-/usr/bin/podman rm -f %N
+ExecStart=/usr/bin/podman run \
   --hostname %H \
   --name %N \
   --rm \
   --network=${PODMAN_NETWORK} \
+  --ip 192.168.254.6 \
   -m 2g \
   -v /app/otel/config.yaml:/etc/otelcol-contrib/config.yaml:z \
   $OTELIMAGE
-ExecStop=/usr/bin/docker stop %N
+ExecStop=/usr/bin/podman stop %N
 Restart=always
 RestartSec=3
 StartLimitInterval=0
@@ -605,6 +611,7 @@ ExecStart=/usr/bin/podman run \
   --security-opt label=disable \
   --entrypoint /opt/td-agent-bit/bin/td-agent-bit \
   --network=${PODMAN_NETWORK} \
+  --ip 192.168.254.7 \
   --hostname %H \
   --name %N \
   --rm \
@@ -830,6 +837,7 @@ ExecStart=/usr/bin/podman run \
   --rm \
   --cap-drop net_raw \
   --network=${PODMAN_NETWORK} \
+  --ip 192.168.254.8 \
   -m 2g \
   -v /etc/mdm.pem:/etc/mdm.pem \
   -v /var/etw:/var/etw:z \
