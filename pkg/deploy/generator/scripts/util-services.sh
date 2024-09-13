@@ -513,8 +513,8 @@ service:
     local -r aro_otel_collector_service_filename='/etc/systemd/system/aro-otel-collector.service'
     # shellcheck disable=SC2034
     local -r aro_otel_collector_service_file='[Unit]
-After=network-online.target
-Wants=network-online.target
+After=mdm.service
+Wants=mdm.service
 StartLimitIntervalSec=0
 [Service]
 RestartSec=1s
