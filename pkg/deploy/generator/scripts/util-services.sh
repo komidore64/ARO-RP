@@ -38,7 +38,7 @@ configure_service_aro_gateway() {
 
     local -r aro_gateway_conf_filename='/etc/sysconfig/aro-gateway'
     local -r add_conf_file="PODMAN_NETWORK='$network'
-IPADDRESS='${ipaddress}'
+IPADDRESS='$ipaddress'
 ROLE='${role,,}'"
 
     write_file aro_gateway_conf_filename conf_file true
@@ -107,7 +107,7 @@ configure_service_aro_rp() {
 
     local -r aro_rp_conf_filename='/etc/sysconfig/aro-rp'
     local -r add_conf_file="PODMAN_NETWORK='$network'
-IPADDRESS='${ipaddress}'
+IPADDRESS='$ipaddress'
 ROLE='${role,,}'"
 
     write_file aro_rp_conf_filename conf_file true
@@ -456,7 +456,7 @@ WantedBy=multi-user.target'
 configure_service_aro_otel_collector() {
     local -n image="$1"
     local -n network="$2"
-    local -nA static_ip_address="$3"
+    local -n static_ip_address="$3"
     local -n ipaddress="$4"
     log "starting"
     log "Configuring aro-otel-collector service"
@@ -904,20 +904,20 @@ configure_vmss_aro_services() {
     verify_role "$1"
 
     if [ "$r" == "$role_gateway" ]; then
-        configure_service_aro_gateway "${images["rp"]}" "$1" "${configs["gateway_config"]}" "${configs["network"]}" "${!configs["static_ip_address"]}[gateway]"
+        configure_service_aro_gateway "${images["rp"]}" "$1" "${configs["gateway_config"]}" "${configs["network"]}" "${configs["static_ip_address"]}["gateway"]"
         configure_certs_gateway
     elif [ "$r" == "$role_rp" ]; then
-        configure_service_aro_rp "${images["rp"]}" "$1" "${configs["rp_config"]}" "${configs["network"]}" "${!configs["static_ip_address"]}[rp]"
-        configure_service_aro_monitor "${images["rp"]}" "${configs["network"]}" "${!configs["static_ip_address"]}[monitor]"
-        configure_service_aro_portal "${images["rp"]}" "${configs["network"]}" "${!configs["static_ip_address"]}[portal]"
-        configure_service_aro_mise "${images["mise"]}" "${configs["network"]}" "${!configs["static_ip_address"]}[mise]"
-        configure_service_aro_otel_collector "${images["otel"]}" "${configs["network"]}" "${configs["static_ip_address"]} "${!configs["static_ip_address"]}[otel_collector]"
+        configure_service_aro_rp "${images["rp"]}" "$1" "${configs["rp_config"]}" "${configs["network"]}" "${configs["static_ip_address"]}["rp"]"
+        configure_service_aro_monitor "${images["rp"]}" "${configs["network"]}" "${configs["static_ip_address"]}["monitor"]"
+        configure_service_aro_portal "${images["rp"]}" "${configs["network"]}" "${configs["static_ip_address"]}["portal"]"
+        configure_service_aro_mise "${images["mise"]}" "${configs["network"]}" "${configs["static_ip_address"]}["mise"]"
+        configure_service_aro_otel_collector "${images["otel"]}" "${configs["network"]}" "${configs["static_ip_address"]}" "${configs["static_ip_address"]}["otel_collector"]"
         configure_certs_rp
     fi
 
-    configure_service_fluentbit "${configs["fluentbit"]}" "${images["fluentbit"]}" "${configs["network"]}" "${!configs["static_ip_address"]}[fluentbit]"
+    configure_service_fluentbit "${configs["fluentbit"]}" "${images["fluentbit"]}" "${configs["network"]}" "${!configs["static_ip_address"]}["fluentbit"]"
     configure_timers_mdm_mdsd "$1"
-    configure_service_mdm "$1" "${images["mdm"]}" "${configs["network"]}" "${!configs["static_ip_address"]}[mdm]"
+    configure_service_mdm "$1" "${images["mdm"]}" "${configs["network"]}" "${!configs["static_ip_address"]}["mdm"]"
     configure_service_mdsd "$1" "${configs["mdsd"]}"
     run_azsecd_config_scan
 }
