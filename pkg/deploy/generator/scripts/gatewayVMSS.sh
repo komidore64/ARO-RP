@@ -48,7 +48,7 @@ main() {
     dnf_install_pkgs install_pkgs \
                      retry_wait_time \
                      "$pkg_retry_count"
-    
+
     fips_configure
 
     # TODO remove this once MicrosoftCBLMariner:cbl-mariner:cbl-mariner-2-gen2-fips supports automatic updates
@@ -130,6 +130,13 @@ RPIMAGE='$rpimage'"
         ["fluentbit"]="fluentbit_conf_file"
         ["mdsd"]="mdsd_config_version"
         ["network"]="aro_network"
+    )
+
+    # shellcheck disable=SC2034
+    local -rA static_ip_addresses=(
+        ["gateway"]="192.168.254.2"
+        ["fluentbit"]="192.168.254.7"
+        ["mdm"]="192.168.254.8"
     )
 
     configure_vmss_aro_services role_gateway \

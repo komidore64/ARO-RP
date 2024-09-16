@@ -144,7 +144,6 @@ main() {
     # shellcheck disable=SC2034
     local -rA static_ip_addresses=(
         ["rp"]="192.168.254.2"
-        ["gateway"]="192.168.254.2"
         ["monitor"]="192.168.254.3"
         ["portal"]="192.168.254.4"
         ["mise"]="192.168.254.5"

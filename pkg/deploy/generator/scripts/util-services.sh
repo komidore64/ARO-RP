@@ -915,9 +915,9 @@ configure_vmss_aro_services() {
         configure_certs_rp
     fi
 
-    configure_service_fluentbit "${configs["fluentbit"]}" "${images["fluentbit"]}" "${configs["network"]}" "${!configs["static_ip_address"]}["fluentbit"]"
+    configure_service_fluentbit "${configs["fluentbit"]}" "${images["fluentbit"]}" "${configs["network"]}" "${configs["static_ip_address"]}["fluentbit"]"
     configure_timers_mdm_mdsd "$1"
-    configure_service_mdm "$1" "${images["mdm"]}" "${configs["network"]}" "${!configs["static_ip_address"]}["mdm"]"
+    configure_service_mdm "$1" "${images["mdm"]}" "${configs["network"]}" "${configs["static_ip_address"]}["mdm"]"
     configure_service_mdsd "$1" "${configs["mdsd"]}"
     run_azsecd_config_scan
 }
