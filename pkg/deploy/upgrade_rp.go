@@ -17,7 +17,7 @@ const (
 )
 
 func (d *deployer) UpgradeRP(ctx context.Context) error {
-	timeoutCtx, cancel := context.WithTimeout(ctx, time.Hour)
+	timeoutCtx, cancel := context.WithTimeout(ctx, 12*time.Hour)
 	defer cancel()
 	err := d.rpWaitForReadiness(timeoutCtx, rpVMSSPrefix+d.version)
 	if err != nil {
@@ -38,7 +38,7 @@ func (d *deployer) rpWaitForReadiness(ctx context.Context, vmssName string) erro
 	}
 
 	d.log.Printf("waiting for %s instances to be healthy", vmssName)
-	return wait.PollImmediateUntil(10*time.Second, func() (bool, error) {
+	return wait.PollImmediateUntil(100*time.Second, func() (bool, error) {
 		for _, vm := range scalesetVMs {
 			if !d.isVMInstanceHealthy(ctx, d.config.RPResourceGroupName, vmssName, *vm.InstanceID) {
 				return false, nil
