@@ -18,6 +18,7 @@ func TestEnsureCertificateIssuer(t *testing.T) {
 	tests := []struct {
 		Name              string
 		CertificateName   string
+		CommonName        string
 		CurrentIssuerName string
 		NewIssuerName     string
 		ExpectError       bool
@@ -25,12 +26,14 @@ func TestEnsureCertificateIssuer(t *testing.T) {
 		{
 			Name:              "current issuer matches new issuer",
 			CertificateName:   "testCert",
+			CommonName:        "api.test.asdf.tld",
 			CurrentIssuerName: "fakeIssuer",
 			NewIssuerName:     "fakeIssuer",
 		},
 		{
 			Name:              "current issuer different from new issuer",
 			CertificateName:   "testCert",
+			CommonName:        "api.test.asdf.tld",
 			CurrentIssuerName: "OldFakeIssuer",
 			NewIssuerName:     "NewFakeIssuer",
 		},
@@ -47,6 +50,9 @@ func TestEnsureCertificateIssuer(t *testing.T) {
 					IssuerParameters: &azkeyvault.IssuerParameters{
 						Name: &test.CurrentIssuerName,
 					},
+					X509CertificateProperties: &azkeyvault.X509CertificateProperties{
+						Subject: &test.CommonName,
+					},
 				},
 			}, nil)
 
@@ -58,7 +64,7 @@ func TestEnsureCertificateIssuer(t *testing.T) {
 				}, nil)
 
 				clusterKeyvault.EXPECT().UpdateCertificatePolicy(gomock.Any(), test.CertificateName, gomock.Any()).Return(nil)
-				clusterKeyvault.EXPECT().CreateSignedCertificate(gomock.Any(), test.NewIssuerName, test.CertificateName, test.CertificateName, gomock.Any()).Return(nil)
+				clusterKeyvault.EXPECT().CreateSignedCertificate(gomock.Any(), test.NewIssuerName, test.CertificateName, test.CommonName, gomock.Any()).Return(nil)
 			}
 
 			env := mock_env.NewMockInterface(controller)

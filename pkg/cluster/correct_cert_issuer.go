@@ -47,7 +47,7 @@ func (m *manager) ensureCertificateIssuer(ctx context.Context, certificateName, 
 			return err
 		}
 
-		err = clusterKeyvault.CreateSignedCertificate(ctx, issuerName, certificateName, certificateName, keyvault.EkuServerAuth)
+		err = clusterKeyvault.CreateSignedCertificate(ctx, issuerName, certificateName, *bundle.Policy.X509CertificateProperties.Subject, keyvault.EkuServerAuth)
 		if err != nil {
 			return err
 		}
