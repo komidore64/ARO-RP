@@ -52,7 +52,7 @@ func NewAuthenticatorPolicy(cred azcore.TokenCredential, audience string) policy
 				}
 				tenantID := strings.ToLower(strings.Trim(u.Path, "/"))
 
-				fmt.Printf("***** auth policy ***** tenantID: %v\n", vals)
+				fmt.Printf("***** auth policy ***** tenantID: %v\n", tenantID)
 
 				// check if valid tenantId
 				if _, err = uuid.FromString(tenantID); err != nil {

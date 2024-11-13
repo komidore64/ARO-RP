@@ -74,6 +74,9 @@ func NewClient(cloud string, authenticator policy.Policy, clientOpts *policy.Cli
 }
 
 func (c *ManagedIdentityClient) GetUserAssignedIdentities(ctx context.Context, request UserAssignedMSIRequest) (*UserAssignedIdentities, error) {
+	// Log request for debugging
+	fmt.Printf("***** ManagedIdentityClient ***** GetUserAssignedIdentities request: %+v\n", request)
+
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	validate.RegisterValidation(resourceIDsTag, validateResourceIDs)
 	if err := validate.Struct(request); err != nil {
@@ -94,6 +97,13 @@ func (c *ManagedIdentityClient) GetUserAssignedIdentities(ctx context.Context, r
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", errGetCreds, err)
 	}
+
+	// Print full object for debugging purposes
+	credsJSON, err := creds.MarshalJSON()
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal credentials object: %w", err)
+	}
+	fmt.Printf("***** ManagedIdentityClient ***** GetUserAssignedIdentities creds: %s\n", string(credsJSON))
 
 	if err := validateUserAssignedMSIs(creds.ExplicitIdentities, request.ResourceIDs); err != nil {
 		return nil, err

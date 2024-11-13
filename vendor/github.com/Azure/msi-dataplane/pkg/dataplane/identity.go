@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	azcloud "github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/msi-dataplane/pkg/dataplane/swagger"
@@ -116,15 +117,30 @@ func validateUserAssignedMSIs(identities []*swagger.NestedCredentialsObject, res
 			return errNilMSI
 		}
 
+		// Print full object for debugging purposes
+		identityJSON, err := identity.MarshalJSON()
+		if err != nil {
+			return fmt.Errorf("failed to marshal identity object: %w", err)
+		}
+		fmt.Printf("***** ManagedIdentityClient ***** validateUserAssignedMSIs identity: %s\n", string(identityJSON))
+
 		// TODO - verify which fields are ok to be nil
 		if identity.ResourceID == nil {
 			return fmt.Errorf("%w, resource ID is nil", errNilField)
 		}
-		resourceIDMap[*identity.ResourceID] = true
+		parsedID, err := arm.ParseResourceID(*identity.ResourceID)
+		if err != nil {
+			return fmt.Errorf("unable to parse identity resource ID %s: %w", *identity.ResourceID, err)
+		}
+		resourceIDMap[parsedID.String()] = true
 	}
 
 	for _, resourceID := range resourceIDs {
-		if _, ok := resourceIDMap[resourceID]; !ok {
+		parsedID, err := arm.ParseResourceID(resourceID)
+		if err != nil {
+			return fmt.Errorf("unable to parse requested identity resource ID %s: %w", resourceID, err)
+		}
+		if _, ok := resourceIDMap[parsedID.String()]; !ok {
 			return fmt.Errorf("%w, resource ID %s", errResourceIDNotFound, resourceID)
 		}
 	}
