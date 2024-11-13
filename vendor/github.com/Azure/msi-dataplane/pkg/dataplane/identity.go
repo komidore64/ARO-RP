@@ -50,9 +50,18 @@ func (c CredentialsObject) IsUserAssigned() bool {
 // Get an AzIdentity credential for the given user-assigned identity resource ID
 // Clients can use the credential to get a token for the user-assigned identity
 func (u UserAssignedIdentities) GetCredential(resourceID string) (*azidentity.ClientCertificateCredential, error) {
+	requestedID, err := arm.ParseResourceID(resourceID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse requested resource ID %s: %w", resourceID, err)
+	}
+
 	for _, id := range u.ExplicitIdentities {
 		if id != nil && id.ResourceID != nil {
-			if *id.ResourceID == resourceID {
+			foundID, err := arm.ParseResourceID(*id.ResourceID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse identity resource ID %s: %w", *id.ResourceID, err)
+			}
+			if requestedID.String() == foundID.String() {
 				return getClientCertificateCredential(*id, u.cloud)
 			}
 		}
@@ -117,12 +126,14 @@ func validateUserAssignedMSIs(identities []*swagger.NestedCredentialsObject, res
 			return errNilMSI
 		}
 
-		// Print full object for debugging purposes
-		identityJSON, err := identity.MarshalJSON()
-		if err != nil {
-			return fmt.Errorf("failed to marshal identity object: %w", err)
-		}
-		fmt.Printf("***** ManagedIdentityClient ***** validateUserAssignedMSIs identity: %s\n", string(identityJSON))
+		/*
+			// Print full object for debugging purposes
+			identityJSON, err := identity.MarshalJSON()
+			if err != nil {
+				return fmt.Errorf("failed to marshal identity object: %w", err)
+			}
+			fmt.Printf("***** ManagedIdentityClient ***** validateUserAssignedMSIs identity: %s\n", string(identityJSON))
+		*/
 
 		// TODO - verify which fields are ok to be nil
 		if identity.ResourceID == nil {

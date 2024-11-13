@@ -99,11 +99,13 @@ func (c *ManagedIdentityClient) GetUserAssignedIdentities(ctx context.Context, r
 	}
 
 	// Print full object for debugging purposes
-	credsJSON, err := creds.MarshalJSON()
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal credentials object: %w", err)
-	}
-	fmt.Printf("***** ManagedIdentityClient ***** GetUserAssignedIdentities creds: %s\n", string(credsJSON))
+	/*
+		credsJSON, err := creds.MarshalJSON()
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal credentials object: %w", err)
+		}
+		fmt.Printf("***** ManagedIdentityClient ***** GetUserAssignedIdentities creds: %s\n", string(credsJSON))
+	*/
 
 	if err := validateUserAssignedMSIs(creds.ExplicitIdentities, request.ResourceIDs); err != nil {
 		return nil, err
