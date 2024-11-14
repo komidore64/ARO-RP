@@ -95,6 +95,10 @@ func getClientCertificateCredential(identity swagger.NestedCredentialsObject, cl
 
 		// x5c header required: https://eng.ms/docs/products/arm/rbac/managed_identities/msionboardingrequestingatoken
 		SendCertificateChain: true,
+
+		// Disable instance discovery because MSI credential may have regional AAD endpoint that instance discovery endpoint doesn't support
+		// e.g. when MSI credential has westus2.login.microsoft.com, it will cause instance discovery to fail with HTTP 400
+		DisableInstanceDiscovery: true,
 	}
 
 	// Set the regional AAD endpoint
