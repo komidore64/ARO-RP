@@ -30,8 +30,6 @@ func NewAuthenticatorPolicy(cred azcore.TokenCredential, audience string) policy
 			OnChallenge: func(req *policy.Request, resp *http.Response, authenticateAndAuthorize func(policy.TokenRequestOptions) error) error {
 				authHeader := resp.Header.Get(headerWWWAuthenticate)
 
-				fmt.Printf("***** auth policy ***** authHeader: %s\n", authHeader)
-
 				// Parse the returned challenge
 				parts := strings.Split(authHeader, " ")
 				vals := map[string]string{}
@@ -44,15 +42,11 @@ func NewAuthenticatorPolicy(cred azcore.TokenCredential, audience string) policy
 					}
 				}
 
-				fmt.Printf("***** auth policy ***** vals: %v\n", vals)
-
 				u, err := url.Parse(vals[headerAuthorization])
 				if err != nil {
 					return fmt.Errorf("%w: %w", errInvalidAuthHeader, err)
 				}
 				tenantID := strings.ToLower(strings.Trim(u.Path, "/"))
-
-				fmt.Printf("***** auth policy ***** tenantID: %v\n", tenantID)
 
 				// check if valid tenantId
 				if _, err = uuid.FromString(tenantID); err != nil {
