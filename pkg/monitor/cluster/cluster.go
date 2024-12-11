@@ -213,6 +213,7 @@ func (mon *Monitor) Monitor(ctx context.Context) (errs []error) {
 		mon.emitCertificateExpirationStatuses,
 		mon.emitEtcdCertificateExpiry,
 		mon.emitPrometheusAlerts, // at the end for now because it's the slowest/least reliable
+		mon.emitCWPStatus,
 	} {
 		err = f(ctx)
 		if err != nil {
