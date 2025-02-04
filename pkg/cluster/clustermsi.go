@@ -51,7 +51,7 @@ func (m *manager) ensureClusterMsiCertificate(ctx context.Context) error {
 	}
 
 	uaMsiRequest := dataplane.UserAssignedIdentitiesRequest{
-		DelegatedResources: &[]string{clusterMsiResourceId.String()},
+		IdentityIds: &[]string{clusterMsiResourceId.String()},
 	}
 
 	client, err := m.msiDataplane.NewClient(m.doc.OpenShiftCluster.Identity.IdentityURL)
