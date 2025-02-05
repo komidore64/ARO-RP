@@ -290,6 +290,8 @@ func (f *frontend) _putOrPatchOpenShiftCluster(ctx context.Context, log *logrus.
 			}
 		}
 
+		log.Warnf("Identity URL: %s", putOrPatchClusterParameters.identityURL)
+
 		doc.Bucket, err = f.bucketAllocator.Allocate()
 		if err != nil {
 			return nil, err
