@@ -6,51 +6,51 @@ package env
 import (
 	"testing"
 
+	"github.com/Azure/ARO-RP/pkg/util/pointerutils"
 	"github.com/Azure/msi-dataplane/pkg/dataplane"
 	"github.com/google/go-cmp/cmp"
-	"k8s.io/utils/ptr"
 )
 
 func managedIdentityCredentials(censor bool, delegatedResources []*dataplane.DelegatedResource, explicitIdentities []*dataplane.UserAssignedIdentityCredentials) dataplane.ManagedIdentityCredentials {
 	return dataplane.ManagedIdentityCredentials{
-		AuthenticationEndpoint: ptr.To("AuthenticationEndpoint"),
-		CannotRenewAfter:       ptr.To("CannotRenewAfter"),
-		ClientID:               ptr.To("ClientID"),
+		AuthenticationEndpoint: pointerutils.ToPtr("AuthenticationEndpoint"),
+		CannotRenewAfter:       pointerutils.ToPtr("CannotRenewAfter"),
+		ClientID:               pointerutils.ToPtr("ClientID"),
 		ClientSecret: func() *string {
 			if censor {
 				return nil
 			}
-			return ptr.To("ClientSecret")
+			return pointerutils.ToPtr("ClientSecret")
 		}(),
-		ClientSecretURL: ptr.To("ClientSecretURL"),
-		CustomClaims:    ptr.To(customClaims()),
+		ClientSecretURL: pointerutils.ToPtr("ClientSecretURL"),
+		CustomClaims:    pointerutils.ToPtr(customClaims()),
 		DelegatedResources: func() []*dataplane.DelegatedResource {
 			if len(delegatedResources) > 0 {
 				return delegatedResources
 			}
 			return nil
 		}(),
-		DelegationURL: ptr.To("DelegationURL"),
+		DelegationURL: pointerutils.ToPtr("DelegationURL"),
 		ExplicitIdentities: func() []*dataplane.UserAssignedIdentityCredentials {
 			if len(explicitIdentities) > 0 {
 				return explicitIdentities
 			}
 			return nil
 		}(),
-		InternalID:                 ptr.To("InternalID"),
-		MtlsAuthenticationEndpoint: ptr.To("MtlsAuthenticationEndpoint"),
-		NotAfter:                   ptr.To("NotAfter"),
-		NotBefore:                  ptr.To("NotBefore"),
-		ObjectID:                   ptr.To("ObjectID"),
-		RenewAfter:                 ptr.To("RenewAfter"),
-		TenantID:                   ptr.To("TenantID"),
+		InternalID:                 pointerutils.ToPtr("InternalID"),
+		MtlsAuthenticationEndpoint: pointerutils.ToPtr("MtlsAuthenticationEndpoint"),
+		NotAfter:                   pointerutils.ToPtr("NotAfter"),
+		NotBefore:                  pointerutils.ToPtr("NotBefore"),
+		ObjectID:                   pointerutils.ToPtr("ObjectID"),
+		RenewAfter:                 pointerutils.ToPtr("RenewAfter"),
+		TenantID:                   pointerutils.ToPtr("TenantID"),
 	}
 }
 
 func delegatedResource(implicitIdentity *dataplane.UserAssignedIdentityCredentials, explicitIdentities ...*dataplane.UserAssignedIdentityCredentials) *dataplane.DelegatedResource {
 	return &dataplane.DelegatedResource{
-		DelegationID:  ptr.To("DelegationID"),
-		DelegationURL: ptr.To("DelegationURL"),
+		DelegationID:  pointerutils.ToPtr("DelegationID"),
+		DelegationURL: pointerutils.ToPtr("DelegationURL"),
 		ExplicitIdentities: func() []*dataplane.UserAssignedIdentityCredentials {
 			if len(explicitIdentities) > 0 {
 				return explicitIdentities
@@ -58,38 +58,38 @@ func delegatedResource(implicitIdentity *dataplane.UserAssignedIdentityCredentia
 			return nil
 		}(),
 		ImplicitIdentity: implicitIdentity,
-		InternalID:       ptr.To("InternalID"),
-		ResourceID:       ptr.To("ResourceID"),
+		InternalID:       pointerutils.ToPtr("InternalID"),
+		ResourceID:       pointerutils.ToPtr("ResourceID"),
 	}
 }
 
 func userAssignedIdentityCredentials(censor bool) *dataplane.UserAssignedIdentityCredentials {
 	return &dataplane.UserAssignedIdentityCredentials{
-		AuthenticationEndpoint: ptr.To("AuthenticationEndpoint"),
-		CannotRenewAfter:       ptr.To("CannotRenewAfter"),
-		ClientID:               ptr.To("ClientID"),
+		AuthenticationEndpoint: pointerutils.ToPtr("AuthenticationEndpoint"),
+		CannotRenewAfter:       pointerutils.ToPtr("CannotRenewAfter"),
+		ClientID:               pointerutils.ToPtr("ClientID"),
 		ClientSecret: func() *string {
 			if censor {
 				return nil
 			}
-			return ptr.To("ClientSecret")
+			return pointerutils.ToPtr("ClientSecret")
 		}(),
-		ClientSecretURL:            ptr.To("ClientSecretURL"),
-		CustomClaims:               ptr.To(customClaims()),
-		MtlsAuthenticationEndpoint: ptr.To("MtlsAuthenticationEndpoint"),
-		NotAfter:                   ptr.To("NotAfter"),
-		NotBefore:                  ptr.To("NotBefore"),
-		ObjectID:                   ptr.To("ObjectID"),
-		RenewAfter:                 ptr.To("RenewAfter"),
-		ResourceID:                 ptr.To("ResourceID"),
-		TenantID:                   ptr.To("TenantID"),
+		ClientSecretURL:            pointerutils.ToPtr("ClientSecretURL"),
+		CustomClaims:               pointerutils.ToPtr(customClaims()),
+		MtlsAuthenticationEndpoint: pointerutils.ToPtr("MtlsAuthenticationEndpoint"),
+		NotAfter:                   pointerutils.ToPtr("NotAfter"),
+		NotBefore:                  pointerutils.ToPtr("NotBefore"),
+		ObjectID:                   pointerutils.ToPtr("ObjectID"),
+		RenewAfter:                 pointerutils.ToPtr("RenewAfter"),
+		ResourceID:                 pointerutils.ToPtr("ResourceID"),
+		TenantID:                   pointerutils.ToPtr("TenantID"),
 	}
 }
 
 func customClaims() dataplane.CustomClaims {
 	return dataplane.CustomClaims{
-		XMSAzNwperimid: []*string{ptr.To("XMSAzNwperimid")},
-		XMSAzTm:        ptr.To("XMSAzTm"),
+		XMSAzNwperimid: []*string{pointerutils.ToPtr("XMSAzNwperimid")},
+		XMSAzTm:        pointerutils.ToPtr("XMSAzTm"),
 	}
 }
 
@@ -101,13 +101,13 @@ func TestCensorCredentials(t *testing.T) {
 		{
 			name: "no delegated resources, explicit credentials",
 			generateData: func(censor bool) (data *dataplane.ManagedIdentityCredentials) {
-				return ptr.To(managedIdentityCredentials(censor, nil, nil))
+				return pointerutils.ToPtr(managedIdentityCredentials(censor, nil, nil))
 			},
 		},
 		{
 			name: "delegated resource without explicit credentials, no top-level explicit credentials",
 			generateData: func(censor bool) (data *dataplane.ManagedIdentityCredentials) {
-				return ptr.To(managedIdentityCredentials(censor, []*dataplane.DelegatedResource{
+				return pointerutils.ToPtr(managedIdentityCredentials(censor, []*dataplane.DelegatedResource{
 					delegatedResource(userAssignedIdentityCredentials(censor)),
 					delegatedResource(userAssignedIdentityCredentials(censor)),
 					nil,
@@ -117,7 +117,7 @@ func TestCensorCredentials(t *testing.T) {
 		{
 			name: "delegated resource with explicit credentials, no top-level explicit credentials",
 			generateData: func(censor bool) (data *dataplane.ManagedIdentityCredentials) {
-				return ptr.To(managedIdentityCredentials(censor, []*dataplane.DelegatedResource{
+				return pointerutils.ToPtr(managedIdentityCredentials(censor, []*dataplane.DelegatedResource{
 					delegatedResource(userAssignedIdentityCredentials(censor), userAssignedIdentityCredentials(censor), userAssignedIdentityCredentials(censor)),
 					delegatedResource(userAssignedIdentityCredentials(censor), userAssignedIdentityCredentials(censor), userAssignedIdentityCredentials(censor), nil),
 				}, nil))
@@ -126,7 +126,7 @@ func TestCensorCredentials(t *testing.T) {
 		{
 			name: "delegated resource with explicit credentials, top-level explicit credentials",
 			generateData: func(censor bool) (data *dataplane.ManagedIdentityCredentials) {
-				return ptr.To(managedIdentityCredentials(censor, []*dataplane.DelegatedResource{
+				return pointerutils.ToPtr(managedIdentityCredentials(censor, []*dataplane.DelegatedResource{
 					delegatedResource(userAssignedIdentityCredentials(censor), userAssignedIdentityCredentials(censor), userAssignedIdentityCredentials(censor)),
 					delegatedResource(userAssignedIdentityCredentials(censor), userAssignedIdentityCredentials(censor), userAssignedIdentityCredentials(censor), nil),
 				}, []*dataplane.UserAssignedIdentityCredentials{

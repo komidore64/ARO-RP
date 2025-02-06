@@ -51,7 +51,7 @@ func (m *manager) ensureClusterMsiCertificate(ctx context.Context) error {
 	}
 
 	uaMsiRequest := dataplane.UserAssignedIdentitiesRequest{
-		IdentityIDs: []*string{ptr.To(clusterMsiResourceId.String())},
+		IdentityIDs: []*string{pointerutils.ToPtr(clusterMsiResourceId.String())},
 	}
 
 	client, err := m.msiDataplane.NewClient(m.doc.OpenShiftCluster.Identity.IdentityURL)
@@ -179,7 +179,7 @@ func (m *manager) clusterIdentityIDs(ctx context.Context) error {
 	}
 
 	uaMsiRequest := dataplane.UserAssignedIdentitiesRequest{
-		IdentityIDs: []*string{ptr.To(clusterMsiResourceId.String())},
+		IdentityIDs: []*string{pointerutils.ToPtr(clusterMsiResourceId.String())},
 	}
 
 	client, err := m.msiDataplane.NewClient(m.doc.OpenShiftCluster.Identity.IdentityURL)
