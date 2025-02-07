@@ -132,7 +132,7 @@ func (m *manager) initializeClusterMsiClients(ctx context.Context) error {
 
 	var azureCred azcore.TokenCredential
 	for _, identity := range kvSecret.ExplicitIdentities {
-		if identity != nil && identity.ResourceID != nil && *identity.ResourceID == msiResourceId.String() {
+		if identity != nil && identity.ResourceID != nil && strings.EqualFold(*identity.ResourceID, msiResourceId.String()) {
 			var err error
 			azureCred, err = dataplane.GetCredential(cloud, *identity)
 			if err != nil {
