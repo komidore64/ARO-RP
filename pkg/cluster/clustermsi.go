@@ -15,6 +15,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/keyvault/v7.0/keyvault"
 	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/Azure/msi-dataplane/pkg/dataplane"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Azure/ARO-RP/pkg/api"
 	"github.com/Azure/ARO-RP/pkg/env"
@@ -120,6 +121,20 @@ func (m *manager) initializeClusterMsiClients(ctx context.Context) error {
 		return err
 	}
 
+	var censored dataplane.ManagedIdentityCredentials
+	if err := json.Unmarshal([]byte(*kvSecretResponse.Value), &censored); err != nil {
+		return err
+	}
+	env.CensorManagedIdentityCredentials(&censored)
+	censoredEncoded, err := json.Marshal(&censored)
+	if err != nil {
+		return err
+	}
+	m.env.Logger().WithFields(logrus.Fields{
+		"client": "msi-dataplane",
+		"body":   string(censoredEncoded),
+	}).Info("fetched msi response from key vault")
+
 	cloud, err := m.env.Environment().CloudNameForMsiDataplane()
 	if err != nil {
 		return err
@@ -130,18 +145,25 @@ func (m *manager) initializeClusterMsiClients(ctx context.Context) error {
 		return err
 	}
 
+	var uamsiIds []string
 	var azureCred azcore.TokenCredential
 	for _, identity := range kvSecret.ExplicitIdentities {
+		if identity != nil && identity.ResourceID != nil {
+			uamsiIds = append(uamsiIds, *identity.ResourceID)
+		}
 		if identity != nil && identity.ResourceID != nil && *identity.ResourceID == msiResourceId.String() {
-			var err error
-			azureCred, err = dataplane.GetCredential(cloud, *identity)
-			if err != nil {
-				return fmt.Errorf("failed to get credential for msi identity %q: %v", msiResourceId, err)
+			uamsiCredential, credentialErr := dataplane.GetCredential(cloud, *identity)
+			if credentialErr != nil {
+				return fmt.Errorf("failed to get credential for msi identity %q: %v", msiResourceId, credentialErr)
 			}
+			if uamsiCredential == nil {
+				return fmt.Errorf("credential for msi identity %q returned nil", msiResourceId)
+			}
+			azureCred = uamsiCredential
 		}
 	}
 	if azureCred == nil {
-		return fmt.Errorf("managed identity credential missing user-assigned identity %q", msiResourceId)
+		return fmt.Errorf("managed identity credential had %d explicit identities (%s), but was missing user-assigned identity %q", len(kvSecret.ExplicitIdentities), strings.Join(uamsiIds, ","), msiResourceId)
 	}
 
 	// Note that we are assuming that all of the platform MIs are in the same subscription as the ARO resource.

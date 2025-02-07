@@ -449,7 +449,7 @@ func ClientDebugLoggerMiddleware(log *logrus.Entry) policy.Policy {
 				if err := json.Unmarshal(body, &response); err != nil {
 					log.WithError(err).Error("error unmarshalling response body")
 				} else {
-					censorCredentials(&response)
+					CensorManagedIdentityCredentials(&response)
 					censored, err := json.Marshal(response)
 					if err != nil {
 						log.WithError(err).Error("error marshalling response body after censoring")
@@ -469,7 +469,7 @@ func ClientDebugLoggerMiddleware(log *logrus.Entry) policy.Policy {
 	})
 }
 
-func censorCredentials(input *dataplane.ManagedIdentityCredentials) {
+func CensorManagedIdentityCredentials(input *dataplane.ManagedIdentityCredentials) {
 	input.ClientSecret = nil
 	for i := 0; i < len(input.DelegatedResources); i++ {
 		if input.DelegatedResources[i] != nil && input.DelegatedResources[i].ImplicitIdentity != nil {
