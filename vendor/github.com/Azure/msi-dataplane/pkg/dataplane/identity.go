@@ -70,7 +70,7 @@ func GetCredential(cloud AzureCloud, credential UserAssignedIdentityCredentials)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", errParseCertificate, err)
 	}
-	return azidentity.NewClientCertificateCredential(*credential.TenantID, *credential.ClientSecret, crt, key, opts)
+	return azidentity.NewClientCertificateCredential(*credential.TenantID, *credential.ClientID, crt, key, opts)
 }
 
 func getAzCoreCloud(cloud AzureCloud) (azcloud.Configuration, error) {
