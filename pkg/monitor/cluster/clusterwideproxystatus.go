@@ -162,7 +162,7 @@ func (mon *Monitor) emitCWPStatus(ctx context.Context) error {
 			return err
 		}
 		clusterDomain := clusterdetails.Spec.Domain
-		if !(noProxyMap[clusterDomain] || noProxyMap[".apps."+clusterDomain] || noProxyMap["."+clusterDomain]) {
+		if !(noProxyMap[clusterDomain] || noProxyMap[".apps."+clusterDomain] || noProxyMap["."+clusterDomain] || noProxyMap["*."+clusterDomain] || noProxyMap["*.apps."+clusterDomain]) {
 			missing_no_proxy_list = append(missing_no_proxy_list, clusterDomain)
 		}
 		for _, gatewayDomain := range clusterdetails.Spec.GatewayDomains {
@@ -186,7 +186,7 @@ func (mon *Monitor) emitCWPStatus(ctx context.Context) error {
 			return err
 		}
 		apiServerIntdomain := strings.Split(apiServerIntURL.Host, ":")[0]
-		if !noProxyMap[apiServerIntdomain] {
+		if !(noProxyMap[apiServerIntdomain] || noProxyMap["*."+clusterDomain]) {
 			missing_no_proxy_list = append(missing_no_proxy_list, apiServerIntdomain)
 		}
 
@@ -197,7 +197,7 @@ func (mon *Monitor) emitCWPStatus(ctx context.Context) error {
 			return err
 		}
 		apiServerProfiledomain := strings.Split(apiServerProfileURL.Host, ":")[0]
-		if !noProxyMap[apiServerProfiledomain] {
+		if !(noProxyMap[apiServerProfiledomain] || noProxyMap["*."+clusterDomain]) {
 			missing_no_proxy_list = append(missing_no_proxy_list, apiServerProfiledomain)
 		}
 
@@ -208,7 +208,7 @@ func (mon *Monitor) emitCWPStatus(ctx context.Context) error {
 				"status":  strconv.FormatBool(status),
 				"Message": message,
 			})
-			mon.log.Info(message)
+			mon.log.Infof(message)
 			if mon.hourlyRun {
 				mon.log.WithFields(logrus.Fields{
 					"metric":  cwp,
