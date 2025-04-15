@@ -22,7 +22,7 @@ const (
 
 func (c *core) NewMSITokenCredential() (azcore.TokenCredential, error) {
 	if !c.IsLocalDevelopmentMode() {
-		options := c.Environment().ManagedIdentityCredentialOptions()
+		options := c.Environment().ManagedIdentityCredentialOptions("")
 		return azidentity.NewManagedIdentityCredential(options)
 	}
 

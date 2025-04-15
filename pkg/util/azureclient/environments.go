@@ -156,8 +156,14 @@ func (e *AROEnvironment) EnvironmentCredentialOptions() *azidentity.EnvironmentC
 	}
 }
 
-func (e *AROEnvironment) ManagedIdentityCredentialOptions() *azidentity.ManagedIdentityCredentialOptions {
+func (e *AROEnvironment) ManagedIdentityCredentialOptions(clientId string) *azidentity.ManagedIdentityCredentialOptions {
+	var cid azidentity.ClientID
+	if clientId != "" {
+		cid = azidentity.ClientID(clientId)
+	}
+
 	return &azidentity.ManagedIdentityCredentialOptions{
+		ID: cid,
 		ClientOptions: azcore.ClientOptions{
 			Cloud: e.Cloud,
 		},
