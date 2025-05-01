@@ -112,10 +112,10 @@ func mirror(ctx context.Context, log *logrus.Entry) error {
 
 		// https://quay.io/repository/app-sre/managed-upgrade-operator?tab=tags
 		// https://gitlab.cee.redhat.com/service/app-interface/-/blob/master/data/services/osd-operators/cicd/saas/saas-managed-upgrade-operator.yaml?ref_type=heads
-		"quay.io/app-sre/managed-upgrade-operator:v0.1.952-44b631a",
+		"quay.io/app-sre/managed-upgrade-operator:v0.1.1202-g118c178",
 
 		// https://quay.io/repository/app-sre/hive?tab=tags
-		"quay.io/app-sre/hive:5d3f4d77dc",
+		"quay.io/app-sre/hive:87bff5947f",
 	} {
 		log.Printf("mirroring %s -> %s", ref, pkgmirror.Dest(dstAcr+acrDomainSuffix, ref))
 
@@ -134,7 +134,7 @@ func mirror(ctx context.Context, log *logrus.Entry) error {
 	var releases []pkgmirror.Node
 	if len(flag.Args()) == 1 {
 		log.Print("reading release graph")
-		releases, err = pkgmirror.AddFromGraph(version.NewVersion(4, 12))
+		releases, err = pkgmirror.AddFromGraph(version.NewVersion(4, 14))
 		if err != nil {
 			return err
 		}

@@ -319,6 +319,12 @@ shared-cluster-login:
 		-u kubeadmin \
 		-p $(shell az aro list-credentials -g sre-shared-cluster -n sre-shared-cluster  -ojson --query "kubeadminPassword")
 
+.PHONY: shared-miwi-cluster-login
+shared-miwi-cluster-login:
+	@oc login $(shell az aro show -g sre-shared-miwi-cluster -n sre-shared-miwi-cluster -ojson --query apiserverProfile.url) \
+		-u kubeadmin \
+		-p $(shell az aro list-credentials -g sre-shared-miwi-cluster -n sre-shared-miwi-cluster  -ojson --query "kubeadminPassword")
+
 .PHONY: shared-cluster-create
 shared-cluster-create:
 	./hack/shared-cluster.sh create
@@ -326,6 +332,14 @@ shared-cluster-create:
 .PHONY: shared-cluster-delete
 shared-cluster-delete:
 	./hack/shared-cluster.sh delete
+
+.PHONY: shared-miwi-cluster-create
+shared-miwi-cluster-create:
+	./hack/shared-miwi-cluster.sh create
+
+.PHONY: shared-miwi-cluster-delete
+shared-miwi-cluster-delete:
+	./hack/shared-miwi-cluster.sh delete
 
 .PHONY: unit-test-python
 unit-test-python:
