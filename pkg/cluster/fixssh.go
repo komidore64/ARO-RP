@@ -20,6 +20,7 @@ import (
 
 var (
 	masterNICRegex               = regexp.MustCompile(`.*(master).*([0-2])-nic`)
+	sshBackendPoolRegex          = regexp.MustCompile(`ssh-([0-2])`)
 	interfacesCreateOrUpdateOpts = &armnetwork.InterfacesClientBeginCreateOrUpdateOptions{ResumeToken: ""}
 )
 
@@ -151,7 +152,7 @@ func (m *manager) updateILBBackendPools(ipc armnetwork.InterfaceIPConfiguration,
 	// Check for NICs that are in the wrong SSH backend pool and remove them.
 	// This covers the case for the bad NIC backend pool placements for CPMS updates to a private cluster
 	ipc.Properties.LoadBalancerBackendAddressPools = slices.DeleteFunc(ipc.Properties.LoadBalancerBackendAddressPools, func(backendPool *armnetwork.BackendAddressPool) bool {
-		remove := *backendPool.ID != *sshBackendPool.ID && strings.Contains(*backendPool.ID, "ssh-")
+		remove := *backendPool.ID != *sshBackendPool.ID && sshBackendPoolRegex.MatchString(*backendPool.ID)
 		if remove {
 			m.log.Infof("Removing NIC %s from Internal Load Balancer API Address Pool %s", nicName, *backendPool.ID)
 			updated = true
